@@ -6,7 +6,13 @@ public:
     virtual bool OnInit() override;
 };
 
+#ifdef _DEBUG
 wxIMPLEMENT_APP_CONSOLE(MyApp);
+#else
+wxIMPLEMENT_APP(MyApp);
+#endif // _DEBUG
+
+
 
 bool MyApp::OnInit()
 {
