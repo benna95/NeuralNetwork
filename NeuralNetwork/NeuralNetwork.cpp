@@ -275,7 +275,7 @@ void NeuralNetwork::Train(MetodoDiAddestramento metodo, ChartControl *plot_soluz
 
 #ifdef _DEBUG
 		std::cout << "------------------------------" << std::endl;
-		std::cout << "inizio epoca: " << i + 1 << std::endl;
+		std::cout << "epoca: " << i + 1;
 #endif // _DEBUG
 
 		InizializzaGradienti();
@@ -303,8 +303,7 @@ void NeuralNetwork::Train(MetodoDiAddestramento metodo, ChartControl *plot_soluz
 
 		
 #ifdef _DEBUG
-		std::cout << "errore: " << CalcolaLoss() << std::endl;
-		std::cout << "fine  epoca: " << i + 1 << std::endl;
+		std::cout << " - errore: " << CalcolaLoss() << std::endl;
 		std::cout << "------------------------------" << std::endl;
 #endif // _DEBUG
 

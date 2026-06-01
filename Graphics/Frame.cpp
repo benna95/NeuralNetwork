@@ -90,7 +90,7 @@ void MyFrame::SetUpNeuralNetwork()
 
     for (int i = 0; i < 3; i++)
     {
-        Network->Add({ TipoDiStrato::nascosto, 1, TipoDiFunzione::Quadratica });
+        Network->Add({ TipoDiStrato::nascosto, 1, TipoDiFunzione::TangenteIperbolica });
     }
 
     Network->Add({ TipoDiStrato::output,   1, TipoDiFunzione::Lineare });

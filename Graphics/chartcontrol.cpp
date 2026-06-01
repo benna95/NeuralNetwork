@@ -291,8 +291,8 @@ void ChartControl::OnPaint(wxPaintEvent& evt)
         auto legend_width = 0.10 * chartArea.GetWidth();
 
         // Posizione relativa al chart.
-        x_pos = chartArea.GetLeft() + 0.78 * chartArea.GetWidth();
-        y_pos = chartArea.GetTop() + 0.78 * chartArea.GetHeight();
+        x_pos = chartArea.GetLeft() + 0.85 * chartArea.GetWidth();
+        y_pos = chartArea.GetTop()  + 0.78 * chartArea.GetHeight();
 
         wxRect2DDouble legend(x_pos, y_pos, legend_width, legend_height);
 
