@@ -20,45 +20,41 @@ void NeuralNetwork::Add(Layer layer)
 
 void NeuralNetwork::CreaMatriceConnessioni()
 {
-	m_connessioni = std::vector<std::vector<std::pair<int, int>>>(m_numero_strati);
+	m_connessioni = std::vector<std::vector<std::pair<int, int>>>(m_numero_strati - 1);
 
-	for (int i = 0; i < m_numero_strati; i++)
+	std::vector<int> offset_strati(m_numero_strati);
+
+	offset_strati[0] = 1;
+
+	// per ogni strato, salvo l'indice globale del primo neurone
+	for (int i = 1; i < m_numero_strati; i++)
 	{
-		if (Layers[i].m_tipo_di_strato == TipoDiStrato::input)
+		offset_strati[i] = offset_strati[i - 1] + Layers[i - 1].m_neuroni.size();
+	}
+
+	for (int i = 0; i < m_numero_strati - 1; i++)
+	{
+		int numero_neuroni_strato_corrente		= Layers[i].m_neuroni.size();
+		int numero_neuroni_strato_successivo	= Layers[i + 1].m_neuroni.size();
+
+		int inizio_strato_corrente		= offset_strati[i];
+		int inizio_strato_successivo	= offset_strati[i + 1];
+
+		std::vector<std::pair<int, int>> connessioni_locali;
+		connessioni_locali.reserve(numero_neuroni_strato_corrente * numero_neuroni_strato_successivo);
+
+		for (int j = 0; j < numero_neuroni_strato_corrente; j++)
 		{
-			auto numero_neuroni_strato_successivo = Layers[i].m_neuroni.size();
-			std::vector<std::pair<int, int>> connessioni_locali(numero_neuroni_strato_successivo);
-			for (int j = 0; j < numero_neuroni_strato_successivo; j++)
+			for (int k = 0; k < numero_neuroni_strato_successivo; k++)
 			{
-				connessioni_locali[j] = std::make_pair<int, int>(0, j + 1);
-			}
-			m_connessioni[i] = connessioni_locali;
-		}
-		else if (Layers[i].m_tipo_di_strato == TipoDiStrato::nascosto)
-		{
-			auto numero_neuroni_strato_corrente		= Layers[i].m_neuroni.size();
-			auto numero_neuroni_strato_successivo	= Layers[i + 1].m_neuroni.size();
-			std::vector<std::pair<int, int>> connessioni_locali(numero_neuroni_strato_successivo * numero_neuroni_strato_corrente);
-			for (int j = 0; j < numero_neuroni_strato_corrente; j++)
-			{
-				for (int z = 0; z < numero_neuroni_strato_successivo; z++)
-				{
-					connessioni_locali[j] = std::make_pair<int, int>((int)j + numero_neuroni_strato_corrente, z + 
-					numero_neuroni_strato_corrente + numero_neuroni_strato_successivo);
-				}
-				m_connessioni[i] = connessioni_locali;
+				int indice_neurone_corrente		= inizio_strato_corrente + j;
+				int indice_neurone_successivo	= inizio_strato_successivo + k;
+
+				connessioni_locali.push_back({ indice_neurone_corrente, indice_neurone_successivo });
 			}
 		}
-		else // Layers[i].m_tipo_di_strato == TipoDiStrato::output
-		{
-			auto numero_neuroni_strato_precedente = Layers[i - 1].m_neuroni.size();
-			std::vector<std::pair<int, int>> connessioni_locali(numero_neuroni_strato_precedente);
-			for (int j = 0; j < numero_neuroni_strato_precedente; j++)
-			{
-				connessioni_locali[j] = std::make_pair<int, int>((int)i, j + 1);
-			}
-			m_connessioni[i] = connessioni_locali;
-		}
+
+		m_connessioni[i] = connessioni_locali;
 	}
 }
 
@@ -421,8 +417,12 @@ void NeuralNetwork::ForwardInference(int epoca, int campione_dataset)
 				auto output_current_layer	= Layers[j].m_neuroni[k].GetOutput(); 
 				auto output_con_pesi_e_bias = output_current_layer * peso + bias;
 				
-				// lo mando in ingresso al neurone del layer successivo
-				Layers[j + 1].m_neuroni[k].SetInput(output_con_pesi_e_bias);
+				// lo mando in ingresso ai neuroni del layer successivo;
+				// quanti ne ho nel layer successivo?
+				for (size_t z = 0; z < Layers[j + 1].m_neuroni.size(); z++)
+				{
+					Layers[j + 1].m_neuroni[z].SetInput(output_con_pesi_e_bias);
+				}
 			}
 		}
 		else if (Layers[j].m_tipo_di_strato == TipoDiStrato::nascosto)
@@ -440,7 +440,7 @@ void NeuralNetwork::ForwardInference(int epoca, int campione_dataset)
 				auto output_con_pesi_e_bias = valore_neurone_con_FdA * peso + bias;
 	
 				// lo mando in ingresso al neurone del layer successivo
-				Layers[j + 1].m_neuroni[k].SetInput(output_con_pesi_e_bias);
+				Layers[j + 1].m_neuroni[k].AddInput(output_con_pesi_e_bias);
 			}
 		}
 		else // Layers[j].m_tipo_di_strato == TipoDiStrato::output

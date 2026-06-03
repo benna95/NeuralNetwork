@@ -10,6 +10,11 @@ void Neurone::SetInput(float value)
 	m_input = value;
 }
 
+void Neurone::AddInput(float value)
+{
+	m_input+= value;
+}
+
 void Neurone::ApplicaFdA(float value)
 {
 	m_output = value;

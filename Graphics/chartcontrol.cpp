@@ -34,7 +34,9 @@ ChartControl::ChartControl(
 
 void ChartControl::OnPaint(wxPaintEvent& evt)
 {
+#ifdef _DEBUG
     std::cout << "OnPaint chiamato\n";
+#endif // _DEBUG
 
     wxAutoBufferedPaintDC dc(this);
     dc.Clear();

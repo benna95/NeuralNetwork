@@ -72,6 +72,7 @@ void MyFrame::StartTraining()
                         {
                             background_thread.join();
                             isProcessing = false;
+							wxLogMessage("Training completato!");
                         });
                 }
             };
@@ -88,9 +89,9 @@ void MyFrame::SetUpNeuralNetwork()
 
     Network->Add({ TipoDiStrato::input,    1, TipoDiFunzione::Lineare });
 
-    for (int i = 0; i < 3; i++)
+    for (int i = 0; i < 2; i++)
     {
-        Network->Add({ TipoDiStrato::nascosto, 1, TipoDiFunzione::TangenteIperbolica });
+        Network->Add({ TipoDiStrato::nascosto, 2, TipoDiFunzione::TangenteIperbolica });
     }
 
     Network->Add({ TipoDiStrato::output,   1, TipoDiFunzione::Lineare });

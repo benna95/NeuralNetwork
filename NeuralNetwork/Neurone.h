@@ -9,6 +9,7 @@ class Neurone
 	float m_output;
 public:
 	void SetInput(float);
+	void AddInput(float);
 	float GetInput() const;
 	void ApplicaFdA(float);
 	float ApplicaDerivataFdA();
