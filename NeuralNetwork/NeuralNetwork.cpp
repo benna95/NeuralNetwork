@@ -20,7 +20,7 @@ void NeuralNetwork::Add(Layer layer)
 
 void NeuralNetwork::CreaMatriceConnessioni()
 {
-	m_connessioni = std::vector<std::vector<std::pair<int, int>>>(m_numero_strati - 1);
+	m_vettore_connessioni = std::vector<std::vector<std::pair<int, int>>>(m_numero_strati - 1);
 
 	std::vector<int> offset_strati(m_numero_strati);
 
@@ -37,8 +37,8 @@ void NeuralNetwork::CreaMatriceConnessioni()
 		int numero_neuroni_strato_corrente		= Layers[i].m_neuroni.size();
 		int numero_neuroni_strato_successivo	= Layers[i + 1].m_neuroni.size();
 
-		int inizio_strato_corrente		= offset_strati[i];
-		int inizio_strato_successivo	= offset_strati[i + 1];
+		int inizio_strato_corrente		= 0; //offset_strati[i];
+		int inizio_strato_successivo	= 0;// offset_strati[i + 1];
 
 		std::vector<std::pair<int, int>> connessioni_locali;
 		connessioni_locali.reserve(numero_neuroni_strato_corrente * numero_neuroni_strato_successivo);
@@ -54,7 +54,7 @@ void NeuralNetwork::CreaMatriceConnessioni()
 			}
 		}
 
-		m_connessioni[i] = connessioni_locali;
+		m_vettore_connessioni[i] = connessioni_locali;
 	}
 }
 
@@ -71,22 +71,41 @@ void NeuralNetwork::InizializzaPesieBias()
 
     for (int i = 0; i < Layers.size(); i++)
     {
-		if (Layers[i].m_tipo_di_strato == TipoDiStrato::input || Layers[i].m_tipo_di_strato == TipoDiStrato::nascosto)
+		if (Layers[i].m_tipo_di_strato == TipoDiStrato::input)
 		{
-			auto numero_neuroni = Layers[i].m_numero_neuroni * Layers[i + 1].m_numero_neuroni;
-			m_pesi.emplace_back(numero_neuroni);
-			m_bias.emplace_back(numero_neuroni);
-			m_numero_pesi.push_back(numero_neuroni);
-			m_numero_bias.push_back(numero_neuroni);
-			m_gradiente_pesi.emplace_back(numero_neuroni);
-			m_gradiente_bias.emplace_back(numero_neuroni);
+			int numero_pesi = Layers[i].m_numero_neuroni * Layers[i + 1].m_numero_neuroni;
+			m_pesi.emplace_back(numero_pesi);
+			m_numero_pesi.push_back(numero_pesi);
+			m_gradiente_pesi.emplace_back(numero_pesi);
 
 			for (auto& peso : m_pesi.back())
 			{
 				//peso = dist(rng);
 				peso = dist(rng);
 #ifdef _DEBUG
-			std::cout << "peso: " << peso << std::endl;
+				std::cout << "peso: " << peso << std::endl;
+#endif // _DEBUG
+			}
+                
+        }
+        else if (Layers[i].m_tipo_di_strato == TipoDiStrato::nascosto)
+        {
+			int numero_pesi = Layers[i].m_numero_neuroni * Layers[i + 1].m_numero_neuroni;
+			m_pesi.emplace_back(numero_pesi);
+			m_numero_pesi.push_back(numero_pesi);
+			m_gradiente_pesi.emplace_back(numero_pesi);
+
+			int numero_bias = Layers[i].m_numero_neuroni;
+			m_bias.emplace_back(numero_bias);
+			m_numero_bias.push_back(numero_bias);
+			m_gradiente_bias.emplace_back(numero_bias);
+
+			for (auto& peso : m_pesi.back())
+			{
+				//peso = dist(rng);
+				peso = dist(rng);
+#ifdef _DEBUG
+				std::cout << "peso: " << peso << std::endl;
 #endif // _DEBUG
 			}
 			for (auto& bias : m_bias.back())
@@ -96,13 +115,34 @@ void NeuralNetwork::InizializzaPesieBias()
 				std::cout << "bias: " << bias << std::endl;
 #endif // _DEBUG
 			}
-                
         }
-        else // Layer::TipoDiStrato::output
-        {
-            // non fare niente
-        }
+		else // Layers[i].m_tipo_di_strato == TipoDiStrato::output
+		{
+			int numero_bias = Layers[i].m_numero_neuroni;
+			m_bias.emplace_back(numero_bias);
+			m_numero_bias.push_back(numero_bias);
+			m_gradiente_bias.emplace_back(numero_bias);
+
+			for (auto& bias : m_bias.back())
+			{
+				bias = 0;
+#ifdef _DEBUG
+				std::cout << "bias: " << bias << std::endl;
+#endif // _DEBUG
+			}
+		}
     }
+}
+
+void NeuralNetwork::ResetNeuroni()
+{
+	for (size_t i = 0; i < Layers.size(); i++)
+	{
+		for (int j = 0; j < Layers[i].m_neuroni.size(); j++) 
+		{
+			Layers[i].m_neuroni[j].Reset();
+		}
+	}
 }
 
 float NeuralNetwork::CalcolaLoss()
@@ -172,28 +212,39 @@ void NeuralNetwork::LeggiDati(const char* filepath)
 	Shuffle();
 }
 
-void NeuralNetwork::BackPropagation(int epoca, int campione_dataset)
+void NeuralNetwork::BackPropagation(int campione_dataset)
 {
 	int i = campione_dataset;
-	auto dLoss_dy_target = CalcolaDerivataLoss_i(i);
+	float dLoss_dy_target = CalcolaDerivataLoss_i(i);
 
+		// ciclo sulle connessioni = numero_strati - 1
 		for (size_t j = 0; j < m_gradiente_pesi.size(); j++) 
 		{
+			int numero_neuroni_strato_corrente = Layers[j].m_neuroni.size();
+			// ciclo sui pesi della j-esima connessione
 			for (size_t k = 0; k < m_pesi[j].size(); k++) 
-			{
-				auto output = Layers[j].m_neuroni[k].GetOutput();
-				float gradiente_pesi_locale = output * dLoss_dy_target;
-				float gradiente_bias_locale = 1 * dLoss_dy_target;
-				for (size_t z = 1 + j; z < m_gradiente_pesi.size(); z++)		
+			{	
+				float gradiente_pesi_locale = 1;
+				float gradiente_bias_locale = 1;
+				// calcolo 2 * (y_pred - y_target) * input del peso 
+				for (size_t n = 0; n < numero_neuroni_strato_corrente; n++)
 				{
-					auto peso = m_pesi[z][k];
-					auto derivata_fdA = Layers[z].m_neuroni[k].ApplicaDerivataFdA();
+					auto output = Layers[j].m_neuroni[n].GetOutput();
+					gradiente_pesi_locale = output * dLoss_dy_target;
+					gradiente_bias_locale = 1 * dLoss_dy_target;
 
-					gradiente_pesi_locale *= peso;
-					gradiente_pesi_locale *= derivata_fdA;
+					// ora calcolo anche i fattori che sono presenti negli altri strati
+					for (size_t z = 1 + j; z < m_gradiente_pesi.size(); z++)
+					{
+						auto peso = m_pesi[z][k];
+						auto derivata_fdA = Layers[z].m_neuroni[k].ApplicaDerivataFdA();
 
-					gradiente_bias_locale *= peso;
-					gradiente_bias_locale *= derivata_fdA;
+						gradiente_pesi_locale *= peso;
+						gradiente_pesi_locale *= derivata_fdA;
+
+						gradiente_bias_locale *= peso;
+						gradiente_bias_locale *= derivata_fdA;
+					}
 				}
 
 				m_gradiente_pesi[j][k] += gradiente_pesi_locale;
@@ -204,17 +255,26 @@ void NeuralNetwork::BackPropagation(int epoca, int campione_dataset)
 			for (auto& gradiente_peso : m_gradiente_pesi[j])
 			{
 				std::cout << "gradiente peso: " << gradiente_peso << std::endl;
-			}*/
+			}
+			*/
 		}
 }
 
 void NeuralNetwork::InizializzaGradienti()
 {
+	
 	for (size_t i = 0; i < m_gradiente_pesi.size(); i++)
 	{
 		for (size_t j = 0; j < m_gradiente_pesi[i].size(); j++)
 		{
 			m_gradiente_pesi[i][j] = 0.0f;
+		}
+	}
+
+	for (size_t i = 0; i < m_gradiente_bias.size(); i++)
+	{
+		for (size_t j = 0; j < m_gradiente_bias[i].size(); j++)
+		{
 			m_gradiente_bias[i][j] = 0.0f;
 		}
 	}
@@ -222,14 +282,24 @@ void NeuralNetwork::InizializzaGradienti()
 
 void NeuralNetwork::ProcessaGradienti()
 {
+	
 	for (size_t i = 0; i < m_gradiente_pesi.size(); i++)
 	{
 		for (size_t j = 0; j < m_gradiente_pesi[i].size(); j++)
 		{
 			m_gradiente_pesi[i][j] /= m_dimensione_dataset;
+		}
+	}
+
+	for (size_t i = 0; i < m_gradiente_bias.size(); i++)
+	{
+		for (size_t j = 0; j < m_gradiente_bias[i].size(); j++)
+		{
 			m_gradiente_bias[i][j] /= m_dimensione_dataset;
 		}
 	}
+	
+	
 }
 
 void NeuralNetwork::AggiornaPesieBias()
@@ -237,7 +307,19 @@ void NeuralNetwork::AggiornaPesieBias()
 	for (int i = 0; i < m_pesi.size(); i++)
 	{
 		m_pesi[i] = m_pesi[i] - (m_learning_rate * m_gradiente_pesi[i]);
-		m_bias[i] = m_bias[i] - (m_learning_rate * m_gradiente_bias[i]);
+	}
+
+	for (int i = 0; i < m_bias.size(); i++)
+	{
+		m_bias[i] = m_bias[i] - (m_learning_rate * m_bias[i]);
+	}
+
+	for (int i = 1; i < Layers.size(); i++)
+	{
+		for (size_t j = 0; j < Layers[i].m_neuroni.size(); j++)
+		{
+			Layers[i].m_neuroni[j].SetBias(m_bias[i][j]);
+		}
 	}
 }
 
@@ -279,15 +361,17 @@ void NeuralNetwork::Train(MetodoDiAddestramento metodo, ChartControl *plot_soluz
 		for (int j = 0; j < m_dimensione_dataset; j++)
 		{
 			// Inferenza
-			ForwardInference(i, j);
-
+			ForwardInference(j);
+			
 			// BackPropagation
-			BackPropagation(i, j);
+			BackPropagation(j);
 
 			if (QuitRequest)
 			{
 				return;
 			}
+
+			ResetNeuroni();
 		}
 
 		ProcessaGradienti();
@@ -296,6 +380,7 @@ void NeuralNetwork::Train(MetodoDiAddestramento metodo, ChartControl *plot_soluz
 		AggiornaPesieBias();
 
 		m_error[i] = CalcolaLoss();
+
 
 		
 #ifdef _DEBUG
@@ -394,64 +479,83 @@ void NeuralNetwork::Shuffle()
 
 }
 
-void NeuralNetwork::ForwardInference(int epoca, int campione_dataset)
+void NeuralNetwork::ForwardInference(int campione_dataset)
 {
 	int i = campione_dataset;
-	// ciclo su tutti i layers
-	for (int j = 0; j < m_numero_strati; j++)
+
+	// setto input
+	for (size_t j = 0; j < Layers[0].m_neuroni.size(); j++)
 	{
-		if (Layers[j].m_tipo_di_strato == TipoDiStrato::input)
+		Layers[0].m_neuroni[j].SetInput(x[i]);
+		Layers[0].m_neuroni[j].ApplicaFdA(); // è lineare quindi non cambia nulla
+	}
+
+#if 0
+	for (size_t layer = 0; layer < m_vettore_connessioni.size(); layer++)
+	{
+		// ciclo sulle connessioni
+		for (size_t c = 0; c < m_vettore_connessioni[layer].size(); c++)
 		{
-			// sono nello strato di input; quindi l'input è effettivamente "x";
-			// ora ho solo un ingresso, ma cmq considero il caso che ho tanti ingressi
-			auto numero_ingressi = Layers[j].m_neuroni.size();
-			for (size_t k = 0; k < numero_ingressi; k++)
+			auto [from, to] = m_vettore_connessioni[layer][c];
+
+			float output_from = Layers[layer].m_neuroni[from].GetOutput();
+			float peso = m_pesi[layer][c];
+
+			float contributo = output_from * peso;
+
+			Layers[layer + 1].m_neuroni[to].AddInput(contributo);
+		}
+		
+		// questa parte è parallelizabile
+		for (size_t n = 0; n < Layers[layer + 1].m_neuroni.size(); n++)
+		{
+			float input_totale = Layers[layer + 1].m_neuroni[n].GetInput();
+			float bias = Layers[layer + 1].m_neuroni[n].GetBias();
+
+			input_totale += bias;
+
+			Layers[layer + 1].m_neuroni[n].SetInput(input_totale);
+			Layers[layer + 1].m_neuroni[n].ApplicaFdA();
+		}
+	}
+#endif
+	// ciclo sui layer fino ad arrivare al penultimo
+	for (size_t layer = 0; layer < m_vettore_connessioni.size(); layer++)
+	{
+		// ciclo sui neuroni dello strato successivo
+		for (size_t n = 0; n < Layers[layer + 1].m_neuroni.size(); n++)
+		{
+			float somma = 0.0f;
+
+			//ciclo sul vettore connessioni che si hanno tra neuroni layer corrente e layer successivo
+			for (size_t c = 0; c < m_vettore_connessioni[layer].size(); c++)
 			{
-				auto input_value = x[i];
-				Layers[j].m_neuroni[k].SetInput(input_value);
-				Layers[j].m_neuroni[k].ApplicaFdA(); // applico la FdA, anche se in questo caso è lineare, quindi non cambia nulla
-	
-				// propagazione
-				auto peso = m_pesi[j][k];
-				auto bias = m_bias[j][k];
-				auto output_current_layer	= Layers[j].m_neuroni[k].GetOutput(); 
-				auto output_con_pesi_e_bias = output_current_layer * peso + bias;
-				
-				// lo mando in ingresso ai neuroni del layer successivo;
-				// quanti ne ho nel layer successivo?
-				for (size_t z = 0; z < Layers[j + 1].m_neuroni.size(); z++)
+
+				auto [from, to] = m_vettore_connessioni[layer][c];
+
+				// la connessione riguarda il neurone n che sto considerando?
+				if (to == n)
 				{
-					Layers[j + 1].m_neuroni[z].SetInput(output_con_pesi_e_bias);
+					float output_from = Layers[layer].m_neuroni[from].GetOutput();
+					float peso = m_pesi[layer][c];
+
+					somma += output_from * peso;
 				}
 			}
+
+			// aggiungo il bias del neurone che sto considerando
+			somma += Layers[layer + 1].m_neuroni[n].GetBias();
+
+			// ora applico la funzione di attivazione
+			Layers[layer + 1].m_neuroni[n].SetInput(somma);
+			Layers[layer + 1].m_neuroni[n].ApplicaFdA();
 		}
-		else if (Layers[j].m_tipo_di_strato == TipoDiStrato::nascosto)
-		{
-			auto numero_ingressi = Layers[j].m_neuroni.size();
-			for (size_t k = 0; k < numero_ingressi; k++)
-			{
-				// il neurone ora ha il valore in in ingresso; prima di tutto gli applico la FdA;
-				Layers[j].m_neuroni[k].ApplicaFdA();
-	
-				// ora estraggo il valore;
-				auto valore_neurone_con_FdA = Layers[j].m_neuroni[k].GetOutput();
-				auto peso = m_pesi[j][k];
-				auto bias = m_bias[j][k];
-				auto output_con_pesi_e_bias = valore_neurone_con_FdA * peso + bias;
-	
-				// lo mando in ingresso al neurone del layer successivo
-				Layers[j + 1].m_neuroni[k].AddInput(output_con_pesi_e_bias);
-			}
-		}
-		else // Layers[j].m_tipo_di_strato == TipoDiStrato::output
-		{
-			auto numero_ingressi = Layers[j].m_neuroni.size();
-			for (size_t k = 0; k < numero_ingressi; k++)
-			{
-				Layers[j].m_neuroni[k].ApplicaFdA();
-				y_pred[i] = Layers[j].m_neuroni[k].GetOutput();
-			}
-		}
+	}
+
+	// calcolo output
+	for (int j = 0; j < Layers[m_numero_strati - 1].m_numero_neuroni; j++)
+	{
+		y_pred[i] = Layers[m_numero_strati - 1].m_neuroni[j].GetOutput();
 	}
 }
 

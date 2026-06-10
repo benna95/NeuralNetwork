@@ -3,6 +3,7 @@
 #include <fstream>
 #include <random>
 #include <mutex>
+#include <chrono>
 
 #include "Layer.h"
 #include "..\Graphics\chartcontrol.h"
@@ -38,7 +39,7 @@ public:
 	std::vector<int> m_numero_pesi;
 	std::vector<int> m_numero_bias;
 	float m_learning_rate;
-	std::vector<std::vector<std::pair<int, int>>> m_connessioni;
+	std::vector<std::vector<std::pair<int, int>>> m_vettore_connessioni;
 	//int m_numero_connessioni;
 
 	int m_numero_epoche;
@@ -50,11 +51,12 @@ public:
 	void InizializzaGradienti();
 	void ProcessaGradienti();
 	void RiordinaDati();
+	void ResetNeuroni();
 
 	void Train(MetodoDiAddestramento, ChartControl*, ChartControl*, std::atomic_bool&);
 
-	void BackPropagation(int, int);
-	void ForwardInference(int, int);
+	void BackPropagation(int);
+	void ForwardInference(int);
 	void AggiornaPesieBias();
 	void CreaMatriceConnessioni();
 
