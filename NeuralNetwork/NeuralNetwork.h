@@ -36,6 +36,7 @@ public:
 	std::vector<std::vector<float>> m_gradiente_pesi;
 	std::vector<std::vector<float>> m_gradiente_bias;
 	std::vector<std::vector<float>> m_bias;
+	std::vector<std::vector<float>> m_delta;
 	std::vector<int> m_numero_pesi;
 	std::vector<int> m_numero_bias;
 	float m_learning_rate;
