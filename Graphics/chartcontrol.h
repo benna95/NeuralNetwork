@@ -5,6 +5,8 @@
 #include <vector>
 
 #include <wx/wx.h>
+#include <wx/statline.h>
+
 
 enum class TipodiGrafico
 {
