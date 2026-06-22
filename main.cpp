@@ -16,7 +16,7 @@ wxIMPLEMENT_APP(MyApp);
 
 bool MyApp::OnInit()
 {
-    MyFrame* frame = new MyFrame("Neural network", wxPoint(0, 0), wxSize(1800, 930));
+    MyFrame* frame = new MyFrame("Neural network", wxDefaultPosition, wxDefaultSize);
     frame->Show(true);
     return true;
 }

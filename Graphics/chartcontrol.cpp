@@ -41,22 +41,18 @@ void ChartControl::OnPaint(wxPaintEvent& evt)
     wxAutoBufferedPaintDC dc(this);
     dc.Clear();
 
-    wxGraphicsContext* gc = wxGraphicsContext::Create(dc);
-
     if (grafico == TipodiGrafico::soluzione)
     {
         if (values[1].size() <= 0)
-        {
             return;
-        }
     }
     else
     {
         if (values[0].size() <= 0)
-        {
             return;
-        }
     }
+
+    wxGraphicsContext* gc = wxGraphicsContext::Create(dc);
 
     if (gc)
     {
@@ -81,7 +77,7 @@ void ChartControl::OnPaint(wxPaintEvent& evt)
 
         const double titleTopBottomMinimumMargin = this->FromDIP(10);
 
-        // Il rettangolo è definito tramite coordinata in alto a SX,
+        // Il rettangolo ï¿½ definito tramite coordinata in alto a SX,
         // larghezza e altezza.
         wxRect2DDouble fullArea{
             0,
@@ -100,7 +96,7 @@ void ChartControl::OnPaint(wxPaintEvent& evt)
 
         wxRect2DDouble chartArea = fullArea;
 
-        // Partendo da fullArea, creo chartArea, cioè l'area del grafico
+        // Partendo da fullArea, creo chartArea, cioï¿½ l'area del grafico
         // delimitata dai margini.
         chartArea.Inset(marginX, marginTop, marginX, marginBottom);
 

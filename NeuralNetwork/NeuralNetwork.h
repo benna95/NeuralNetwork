@@ -47,6 +47,11 @@ public:
 
 	void Add(Layer);
 	void Shuffle();
+#ifdef _DEBUG
+	~NeuralNetwork();
+#endif // _DEBUG
+
+	
 
 	void InizializzaPesieBias();
 	void InizializzaGradienti();

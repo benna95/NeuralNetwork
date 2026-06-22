@@ -30,7 +30,7 @@ MyFrame::MyFrame(const wxString& title, const wxPoint& pos, const wxSize& size)
 
     //plot_loss_function->title = "Loss Function";
 
-    this->Bind(wxEVT_CLOSE_WINDOW, &MyFrame::OnClose, this);
+    //this->Bind(wxEVT_CLOSE_WINDOW, &MyFrame::OnClose, this);
 
 #ifdef _DEBUG
     this->Bind(wxEVT_SIZE, &MyFrame::PrintWindowsSize, this);
@@ -45,6 +45,7 @@ MyFrame::MyFrame(const wxString& title, const wxPoint& pos, const wxSize& size)
     CreateWindow();
 
 	SetUpRete->Bind(wxEVT_BUTTON, &MyFrame::SetUpReteNeurale, this);
+	AvviaRete->Bind(wxEVT_BUTTON, &MyFrame::StartTraining, this);
 
 
     m_text_ctrl_numero_input->Bind(wxEVT_TEXT, &MyFrame::CheckParametri, this);
@@ -57,16 +58,21 @@ MyFrame::MyFrame(const wxString& title, const wxPoint& pos, const wxSize& size)
     m_choice_strati_nascosti->Bind(wxEVT_CHOICE, &MyFrame::OnSceltaFdAStratiNascosti, this);
     m_choice_output_activation->Bind(wxEVT_CHOICE, &MyFrame::OnSceltaFdAOutput, this);
 
-    //StartTraining();
 }
 
-void MyFrame::StartTraining()
+void MyFrame::StartTraining(wxCommandEvent &)
 {
+    NetworkTrainingDialog dialog(this, wxID_ANY, "progress",
+                                 wxDefaultPosition, wxSize(1800, 930));
+    dialog.StartTraining(Network);
+    dialog.ShowModal();
+    
+    /*
     if (!isProcessing)
     {
         isProcessing = true;
 
-        auto training_function = [this]()
+        auto training_function = [&]()
             {
                 Network->Train(
                     MetodoDiAddestramento::FullBatchGradientDescent,
@@ -95,7 +101,7 @@ void MyFrame::StartTraining()
             };
 
         background_thread = std::thread(training_function);
-    }
+    }*/
 }
 
 void MyFrame::CreateWindow()
@@ -351,7 +357,10 @@ void MyFrame::CreateWindow()
     main_vertical_sizer->Add(pannello_bottoni, 0, wxEXPAND | wxALL, 5);
 
     this->SetSizerAndFit(main_vertical_sizer);
+
 }
+
+/*
 
 void MyFrame::OnClose(wxCloseEvent& event)
 {
@@ -369,6 +378,8 @@ void MyFrame::OnClose(wxCloseEvent& event)
         this->Destroy();
     }
 }
+
+*/
 
 MyFrame::~MyFrame()
 {
@@ -389,6 +400,7 @@ void MyFrame::SetUpReteNeurale(wxCommandEvent& event)
 {
 	TransferDataFromWindow();
 
+    delete Network;
     Network = new NeuralNetwork(
     std::stoi(m_numero_input.ToStdString()),    // numero_input
     1000,                                       // campione_dataset
@@ -396,7 +408,7 @@ void MyFrame::SetUpReteNeurale(wxCommandEvent& event)
     std::stoi(m_numero_epoche.ToStdString())    // numero_epoche
     ); 
 
-    Network->LeggiDati("generate_data/data.txt");
+    Network->LeggiDati("generate_data/tangente_iperbolica.txt");
 
     Network->Add({ TipoDiStrato::input,    1, TipoDiFunzione::Lineare });
 
@@ -425,7 +437,7 @@ void MyFrame::AggiornaParametri(wxCommandEvent& event)
 {
     TransferDataFromWindow();
 
-    // se anche uno solo dei campi è vuoto, non procedo oltre
+    // se anche uno solo dei campi ï¿½ vuoto, non procedo oltre
     if (m_text_ctrl_numero_input->IsEmpty() || m_text_ctrl_output->IsEmpty() || 
     m_text_ctrl_neuroni_per_strato_nascosto->IsEmpty() || m_text_ctrl_strati_nascosti->IsEmpty())
     {
@@ -437,8 +449,8 @@ void MyFrame::AggiornaParametri(wxCommandEvent& event)
     int neuroni_per_strato  = std::stoi(m_numero_neuroni_per_strato_nascosto.ToStdString());
     int numero_output       = std::stoi(m_numero_output.ToStdString());
 
-    int numero_totale_pesi = 0;
-    int numero_totale_bias = 0;
+    int numero_totale_pesi  = 0;
+    int numero_totale_bias  = 0;
 
     numero_totale_pesi += numero_input * neuroni_per_strato;                                // input -> primo strato nascosto
     numero_totale_pesi += neuroni_per_strato * neuroni_per_strato * (strati_nascosti - 1);  // strati nascosti intermedi

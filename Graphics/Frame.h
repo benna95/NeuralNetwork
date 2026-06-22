@@ -2,7 +2,7 @@
 #include <atomic>
 #include <thread>
 #include <wx/wx.h>
-#include "../NeuralNetwork/NeuralNetwork.h"
+#include "NetworkTrainingDialog.h"
 
 wxDECLARE_EVENT(EVT_PARAMETRI_VALIDI, wxCommandEvent);
 
@@ -11,7 +11,7 @@ class MyFrame : public wxFrame
 public:
     MyFrame(const wxString& title, const wxPoint& pos, const wxSize& size);
 private:
-    void StartTraining();
+    void StartTraining(wxCommandEvent&);
     void CreateWindow();
 	void SetUpReteNeurale(wxCommandEvent& event);
     void OnClose(wxCloseEvent& event);
@@ -27,12 +27,12 @@ private:
 
 private:
     // ---- stato / logica ----
-    ChartControl* plot_soluzione        = nullptr;
-    ChartControl* plot_loss_function    = nullptr;
-    bool isProcessing                   = false;
-    std::atomic_bool QuitRequest        = false;
+    //ChartControl* plot_soluzione        = nullptr;
+    //ChartControl* plot_loss_function    = nullptr;
+    //bool isProcessing                   = false;
+    //std::atomic_bool QuitRequest        = false;
     NeuralNetwork* Network              = nullptr;
-    std::thread background_thread;
+    //std::thread background_thread;
 
     // ---- Architettura ----
     wxTextCtrl* m_text_ctrl_numero_input                = nullptr;

@@ -627,3 +627,12 @@ const std::vector<float>& NeuralNetwork::GetErrorVector() const
 {
 	return m_error;
 }
+
+#ifdef _DEBUG
+NeuralNetwork::~NeuralNetwork()
+{
+	std::cout << "sto eliminando NeuralNetwork: " << this << std::endl;
+}
+
+#endif // _DEBUG
+

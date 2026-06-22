@@ -154,6 +154,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Graphics\chartcontrol.cpp" />
+    <ClCompile Include="Graphics\NetworkTrainingDialog.cpp" />
     <ClCompile Include="Graphics\Frame.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="NeuralNetwork\FunzioneDiAttivazione.cpp" />
@@ -167,11 +168,11 @@
   </ItemGroup>
   <ItemGroup>
     <Image Include="assets\neuralnetwork.ico" />
-    <Image Include="icon1.ico" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Graphics\chartcontrol.h" />
     <ClInclude Include="Graphics\Frame.h" />
+    <ClInclude Include="Graphics\NetworkTrainingDialog.h" />
     <ClInclude Include="NeuralNetwork\FunzioneDiAttivazione.h" />
     <ClInclude Include="NeuralNetwork\Layer.h" />
     <ClInclude Include="NeuralNetwork\NeuralNetwork.h" />
