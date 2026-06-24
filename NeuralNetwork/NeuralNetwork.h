@@ -3,13 +3,12 @@
 #include <fstream>
 #include <random>
 #include <mutex>
-#include <chrono>
 
 #include "Layer.h"
 #include "..\Graphics\chartcontrol.h"
 #include "..\Utils\VectorOperations.h"
 
-enum class MetodoDiAddestramento
+enum class OptimizationAlgorithm
 {
 	FullBatchGradientDescent	= 0,
 	StochasticGradientDescent	= 1,
@@ -21,29 +20,29 @@ class NeuralNetwork
 public:
 	std::vector<Layer> Layers;
 	NeuralNetwork(int, int, float, int);
-	int m_numero_strati;
-	int m_dimensione_dataset;
-	int m_numero_input;
+	int m_layers_number;
+	int m_dataset_size;
+	int m_inputs_number;
 	std::vector<float> x;
 	std::vector<float> y_pred;
 	std::vector<float> y_target;
 	std::vector<float> x_original;
 	std::vector<float> m_error;
-	std::vector<float> y_target_originale;
-	std::vector<float> y_pred_originale;
-	std::vector<int> m_indici;
-	std::vector<std::vector<float>> m_pesi;
-	std::vector<std::vector<float>> m_gradiente_pesi;
-	std::vector<std::vector<float>> m_gradiente_bias;
+	std::vector<float> y_target_original;
+	std::vector<float> y_pred_original;
+	std::vector<int> m_indexes;
+	std::vector<std::vector<float>> m_weights;
+	std::vector<std::vector<float>> m_weights_gradient;
+	std::vector<std::vector<float>> m_bias_gradient;
 	std::vector<std::vector<float>> m_bias;
 	std::vector<std::vector<float>> m_delta;
-	std::vector<int> m_numero_pesi;
-	std::vector<int> m_numero_bias;
+	std::vector<int> m_weights_number;
+	std::vector<int> m_bias_number;
 	float m_learning_rate;
-	std::vector<std::vector<std::pair<int, int>>> m_vettore_connessioni;
+	std::vector<std::vector<std::pair<int, int>>> m_connections_vector;
 	//int m_numero_connessioni;
 
-	int m_numero_epoche;
+	int epochs_number;
 
 	void Add(Layer);
 	void Shuffle();
@@ -59,7 +58,7 @@ public:
 	void RiordinaDati();
 	void ResetNeuroni();
 
-	void Train(MetodoDiAddestramento, ChartControl*, ChartControl*, std::atomic_bool&);
+	void Train(OptimizationAlgorithm, ChartControl*, ChartControl*, std::atomic_bool&);
 
 	void BackPropagation(int);
 	void ForwardInference(int);
@@ -71,7 +70,7 @@ public:
 	const std::vector<float>& GetX() const;
 	const std::vector<float>& GetErrorVector() const;
 
-	void LeggiDati(const char*);
+	void ReadInputData(const char*);
 	void EsportaDati();
 
 	float CalcolaLoss();

@@ -21,7 +21,7 @@
     <ClCompile Include="main.cpp">
       <Filter>File di origine</Filter>
     </ClCompile>
-    <ClCompile Include="NeuralNetwork\FunzioneDiAttivazione.cpp">
+    <ClCompile Include="NeuralNetwork\ActivationFunction.cpp">
       <Filter>File di origine</Filter>
     </ClCompile>
     <ClCompile Include="NeuralNetwork\Layer.cpp">
@@ -30,7 +30,7 @@
     <ClCompile Include="NeuralNetwork\NeuralNetwork.cpp">
       <Filter>File di origine</Filter>
     </ClCompile>
-    <ClCompile Include="NeuralNetwork\Neurone.cpp">
+    <ClCompile Include="NeuralNetwork\Neuron.cpp">
       <Filter>File di origine</Filter>
     </ClCompile>
     <ClCompile Include="Graphics\chartcontrol.cpp">
@@ -63,7 +63,7 @@
     <ClInclude Include="Graphics\Frame.h">
       <Filter>File di intestazione</Filter>
     </ClInclude>
-    <ClInclude Include="NeuralNetwork\FunzioneDiAttivazione.h">
+    <ClInclude Include="NeuralNetwork\ActivationFunction.h">
       <Filter>File di intestazione</Filter>
     </ClInclude>
     <ClInclude Include="NeuralNetwork\Layer.h">
@@ -72,7 +72,7 @@
     <ClInclude Include="NeuralNetwork\NeuralNetwork.h">
       <Filter>File di intestazione</Filter>
     </ClInclude>
-    <ClInclude Include="NeuralNetwork\Neurone.h">
+    <ClInclude Include="NeuralNetwork\Neuron.h">
       <Filter>File di intestazione</Filter>
     </ClInclude>
     <ClInclude Include="Utils\VectorOperations.h">

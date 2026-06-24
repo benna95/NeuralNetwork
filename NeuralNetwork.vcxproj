@@ -157,10 +157,10 @@
     <ClCompile Include="Graphics\NetworkTrainingDialog.cpp" />
     <ClCompile Include="Graphics\Frame.cpp" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="NeuralNetwork\FunzioneDiAttivazione.cpp" />
+    <ClCompile Include="NeuralNetwork\ActivationFunction.cpp" />
     <ClCompile Include="NeuralNetwork\Layer.cpp" />
     <ClCompile Include="NeuralNetwork\NeuralNetwork.cpp" />
-    <ClCompile Include="NeuralNetwork\Neurone.cpp" />
+    <ClCompile Include="NeuralNetwork\Neuron.cpp" />
     <ClCompile Include="Utils\VectorOperations.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -173,10 +173,10 @@
     <ClInclude Include="Graphics\chartcontrol.h" />
     <ClInclude Include="Graphics\Frame.h" />
     <ClInclude Include="Graphics\NetworkTrainingDialog.h" />
-    <ClInclude Include="NeuralNetwork\FunzioneDiAttivazione.h" />
+    <ClInclude Include="NeuralNetwork\ActivationFunction.h" />
     <ClInclude Include="NeuralNetwork\Layer.h" />
     <ClInclude Include="NeuralNetwork\NeuralNetwork.h" />
-    <ClInclude Include="NeuralNetwork\Neurone.h" />
+    <ClInclude Include="NeuralNetwork\Neuron.h" />
     <ClInclude Include="Utils\VectorOperations.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

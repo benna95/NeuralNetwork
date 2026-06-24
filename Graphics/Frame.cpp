@@ -5,42 +5,9 @@ wxDEFINE_EVENT(EVT_PARAMETRI_VALIDI, wxCommandEvent);
 MyFrame::MyFrame(const wxString& title, const wxPoint& pos, const wxSize& size)
     : wxFrame(NULL, wxID_ANY, title, pos, size)
 {
-    //auto main_sizer = new wxBoxSizer(wxVERTICAL);
-
-    /*
-
-    plot_soluzione = new ChartControl(
-        this,
-        wxID_ANY,
-        wxDefaultPosition,
-        wxDefaultSize,
-        TipodiGrafico::soluzione
-    );
-
-    plot_soluzione->title = "Neural Network";
-
-    plot_loss_function = new ChartControl(
-        this,
-        wxID_ANY,
-        wxDefaultPosition,
-        wxDefaultSize,
-        TipodiGrafico::loss_function
-    );
-    */
-
-    //plot_loss_function->title = "Loss Function";
-
-    //this->Bind(wxEVT_CLOSE_WINDOW, &MyFrame::OnClose, this);
-
 #ifdef _DEBUG
     this->Bind(wxEVT_SIZE, &MyFrame::PrintWindowsSize, this);
 #endif
-
-    //main_sizer->Add(plot_soluzione, 2, wxEXPAND | wxALL, FromDIP(5));
-    //main_sizer->Add(plot_loss_function, 1, wxEXPAND | wxALL, FromDIP(5));
-
-    //SetSizer(main_sizer);
-    //SetMinClientSize(size);
 
     CreateWindow();
 
@@ -57,7 +24,7 @@ MyFrame::MyFrame(const wxString& title, const wxPoint& pos, const wxSize& size)
 
     m_choice_strati_nascosti->Bind(wxEVT_CHOICE, &MyFrame::OnSceltaFdAStratiNascosti, this);
     m_choice_output_activation->Bind(wxEVT_CHOICE, &MyFrame::OnSceltaFdAOutput, this);
-
+    m_choice_tipo_di_regressione->Bind(wxEVT_CHOICE, &MyFrame::OnSceltaRegressione, this);
 }
 
 void MyFrame::StartTraining(wxCommandEvent &)
@@ -66,42 +33,6 @@ void MyFrame::StartTraining(wxCommandEvent &)
                                  wxDefaultPosition, wxSize(1800, 930));
     dialog.StartTraining(Network);
     dialog.ShowModal();
-    
-    /*
-    if (!isProcessing)
-    {
-        isProcessing = true;
-
-        auto training_function = [&]()
-            {
-                Network->Train(
-                    MetodoDiAddestramento::FullBatchGradientDescent,
-                    plot_soluzione,
-                    plot_loss_function,
-                    QuitRequest
-                );
-
-                if (QuitRequest)
-                {
-                    this->CallAfter([this]()
-                        {
-                            isProcessing = false;
-                            background_thread.join();
-                            Destroy();
-                        });
-                }
-                else
-                {
-                    this->CallAfter([this]()
-                        {
-                            background_thread.join();
-                            isProcessing = false;
-                        });
-                }
-            };
-
-        background_thread = std::thread(training_function);
-    }*/
 }
 
 void MyFrame::CreateWindow()
@@ -117,17 +48,49 @@ void MyFrame::CreateWindow()
     auto staticline1 = new wxStaticLine(pannello_architettura, wxID_ANY);
     sizer_pannello_architettura->Add(staticline1, 0, wxEXPAND | wxALL, 5);
 
-    auto m_static_text_architettura = new wxStaticText(pannello_architettura, wxID_ANY, _("Architettura"));
+    auto m_static_text_architettura = new wxStaticText(pannello_architettura, wxID_ANY, _("Network architecture"));
     m_static_text_architettura->SetFont(wxFont(14, wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD));
     sizer_pannello_architettura->Add(m_static_text_architettura, 0, wxALL | wxALIGN_CENTER_HORIZONTAL, 5);
+
+    //riga: tipo di regressione
+    auto m_panel_tipo_regressione = new wxPanel(pannello_architettura, wxID_ANY);
+    wxBoxSizer* sizer_panel_tipo_regressione = new wxBoxSizer(wxHORIZONTAL);
+    wxArrayString tipo_di_regressione;
+    tipo_di_regressione.Add(_("Linear (x)"));
+    tipo_di_regressione.Add(_("Quadratic (x^2)"));
+    tipo_di_regressione.Add(_("Cubic (x^3)"));
+    tipo_di_regressione.Add(_("Absolute value (|x|)"));
+    tipo_di_regressione.Add(_("Exponential (e^x)"));
+    tipo_di_regressione.Add(_("Sigmoid (1 / (1 + e^-x))"));
+    tipo_di_regressione.Add(_("Hyperbolic tangent (tanh(x))"));
+    tipo_di_regressione.Add(_("Inverse quadratic (1 / (1 + x^2))"));
+    tipo_di_regressione.Add(_("Gaussian (e^(-x^2))"));
+    tipo_di_regressione.Add(_("Sinusoid (sin(x))"));
+    tipo_di_regressione.Add(_("Cosinusoid (cos(x))"));
+    tipo_di_regressione.Add(_("Sinc (sin(x)/x)"));
+    m_choice_tipo_di_regressione = new wxChoice(m_panel_tipo_regressione, wxID_ANY, wxDefaultPosition, wxDefaultSize, tipo_di_regressione);
+    m_choice_tipo_di_regressione->SetSelection(0);
+
+    auto m_static_text_regressione = new wxStaticText(m_panel_tipo_regressione, wxID_ANY, _("kind of regression"));
+
+    sizer_panel_tipo_regressione->Add(m_static_text_regressione, 0, wxALL, 5);
+    sizer_panel_tipo_regressione->AddStretchSpacer(1);
+    sizer_panel_tipo_regressione->Add(m_choice_tipo_di_regressione, 0, wxALL, 5);
+
+    m_panel_tipo_regressione->SetSizer(sizer_panel_tipo_regressione);
+    sizer_pannello_architettura->Add(m_panel_tipo_regressione, 0, wxEXPAND | wxALL, 5);
 
     // riga: numero input
     auto m_panel_num_input = new wxPanel(pannello_architettura, wxID_ANY);
     wxBoxSizer* sizer_panel_num_input = new wxBoxSizer(wxHORIZONTAL);
 
-    auto m_static_text_numero_input = new wxStaticText(m_panel_num_input, wxID_ANY, _("numero input"));
+    auto m_static_text_numero_input = new wxStaticText(m_panel_num_input, wxID_ANY, _("input numbers"));
     m_text_ctrl_numero_input = new wxTextCtrl(m_panel_num_input, wxID_ANY, wxEmptyString);
     m_text_ctrl_numero_input->SetValidator(wxTextValidator(wxFILTER_DIGITS, &m_numero_input));
+#ifdef _DEBUG
+    m_numero_input = "1";
+    TransferDataToWindow();
+#endif
 
     sizer_panel_num_input->Add(m_static_text_numero_input, 0, wxALL, 5);
     sizer_panel_num_input->AddStretchSpacer(1);
@@ -140,17 +103,21 @@ void MyFrame::CreateWindow()
     auto m_panel_strati_nascosti = new wxPanel(pannello_architettura, wxID_ANY);
     wxBoxSizer* sizer_panel_strati_nascosti = new wxBoxSizer(wxHORIZONTAL);
 
-    auto m_static_text_strati_nascosti = new wxStaticText(m_panel_strati_nascosti, wxID_ANY, _("strati nascosti"));
+    auto m_static_text_strati_nascosti = new wxStaticText(m_panel_strati_nascosti, wxID_ANY, _("hidden layers"));
     m_text_ctrl_strati_nascosti = new wxTextCtrl(m_panel_strati_nascosti, wxID_ANY, wxEmptyString);
     m_text_ctrl_strati_nascosti->SetValidator(wxTextValidator(wxFILTER_DIGITS, &m_numero_strati_nascosti));
+#ifdef _DEBUG
+    m_numero_strati_nascosti = "3";
+    TransferDataToWindow();
+#endif
 
 
     wxArrayString m_choice_strati_nascosti_choices;
-    m_choice_strati_nascosti_choices.Add(_("Lineare"));
+    m_choice_strati_nascosti_choices.Add(_("Linear"));
     m_choice_strati_nascosti_choices.Add(_("ReLU"));
     m_choice_strati_nascosti_choices.Add(_("Sigmoid"));
     m_choice_strati_nascosti_choices.Add(_("Tanh"));
-    m_choice_strati_nascosti_choices.Add(_("Quadratica"));
+    m_choice_strati_nascosti_choices.Add(_("Quadratic"));
 
     m_choice_strati_nascosti = new wxChoice(m_panel_strati_nascosti, wxID_ANY, wxDefaultPosition, wxDefaultSize, m_choice_strati_nascosti_choices);
     m_choice_strati_nascosti->SetSelection(0);
@@ -166,9 +133,13 @@ void MyFrame::CreateWindow()
 
     // riga: numero neuroni x strato nascosto
 	auto panel_neuroni_per_strato_nascosto = new wxPanel(pannello_architettura, wxID_ANY);
-    auto m_static_text_neuroni_per_strato_nascosto = new wxStaticText(panel_neuroni_per_strato_nascosto, wxID_ANY, _("neuroni per strato nascosto"));
+    auto m_static_text_neuroni_per_strato_nascosto = new wxStaticText(panel_neuroni_per_strato_nascosto, wxID_ANY, _("neurons per hidden layer"));
     m_text_ctrl_neuroni_per_strato_nascosto = new wxTextCtrl(panel_neuroni_per_strato_nascosto, wxID_ANY, wxEmptyString);
     m_text_ctrl_neuroni_per_strato_nascosto->SetValidator(wxTextValidator(wxFILTER_DIGITS, &m_numero_neuroni_per_strato_nascosto));
+#ifdef _DEBUG
+    m_numero_neuroni_per_strato_nascosto = "3";
+    TransferDataToWindow();
+#endif
 
     wxBoxSizer* sizer_panel_neuroni_per_strato_nascosto = new wxBoxSizer(wxHORIZONTAL);
     sizer_panel_neuroni_per_strato_nascosto->Add(m_static_text_neuroni_per_strato_nascosto, 0, wxALL, 5);
@@ -186,11 +157,13 @@ void MyFrame::CreateWindow()
     auto m_static_text_output = new wxStaticText(m_panel_output, wxID_ANY, _("output"));
     m_text_ctrl_output = new wxTextCtrl(m_panel_output, wxID_ANY, wxEmptyString);
     m_text_ctrl_output->SetValidator(wxTextValidator(wxFILTER_DIGITS, &m_numero_output));
+#ifdef _DEBUG
+    m_numero_output = "1";
+    TransferDataToWindow();
+#endif
 
     wxArrayString m_choice_output_choices;
-    //m_choice_output_choices.Add(_("Softmax"));
-    //m_choice_output_choices.Add(_("Sigmoid"));
-    m_choice_output_choices.Add(_("Lineare"));
+    m_choice_output_choices.Add(_("Linear"));
     m_choice_output_activation = new wxChoice(m_panel_output, wxID_ANY, wxDefaultPosition, wxDefaultSize, m_choice_output_choices);
     m_choice_output_activation->SetSelection(0);
 
@@ -219,7 +192,7 @@ void MyFrame::CreateWindow()
     auto staticline3 = new wxStaticLine(pannello_parametri, wxID_ANY);
     sizer_pannello_parametri->Add(staticline3, 0, wxEXPAND | wxALL, 5);
 
-    auto m_static_text_riassunto_rete = new wxStaticText(pannello_parametri, wxID_ANY, _("Riassunto Rete"));
+    auto m_static_text_riassunto_rete = new wxStaticText(pannello_parametri, wxID_ANY, _("Network recap"));
     m_static_text_riassunto_rete->SetFont(wxFont(14, wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD));
     sizer_pannello_parametri->Add(m_static_text_riassunto_rete, 0, wxALL | wxALIGN_CENTER_HORIZONTAL, 5);
 
@@ -227,9 +200,9 @@ void MyFrame::CreateWindow()
     auto m_panel_parametri_riassunto = new wxPanel(pannello_parametri, wxID_ANY);
     wxBoxSizer* sizer_parametri_riassunto = new wxBoxSizer(wxHORIZONTAL);
 
-    m_static_text_numero_pesi       = new wxStaticText(m_panel_parametri_riassunto, wxID_ANY, _("numero pesi: "));
-    m_static_text_numero_bias       = new wxStaticText(m_panel_parametri_riassunto, wxID_ANY, _("numero bias:"));
-    m_static_text_parametri_totali  = new wxStaticText(m_panel_parametri_riassunto, wxID_ANY, _("parametri totali:"));
+    m_static_text_numero_pesi       = new wxStaticText(m_panel_parametri_riassunto, wxID_ANY, _("weight number: "));
+    m_static_text_numero_bias       = new wxStaticText(m_panel_parametri_riassunto, wxID_ANY, _("bias number:"));
+    m_static_text_parametri_totali  = new wxStaticText(m_panel_parametri_riassunto, wxID_ANY, _("total parameters:"));
 
     sizer_parametri_riassunto->AddStretchSpacer(1);
     sizer_parametri_riassunto->Add(m_static_text_numero_pesi, 0, wxALL, 5);
@@ -265,7 +238,7 @@ void MyFrame::CreateWindow()
     auto m_panel_tipo_metodo = new wxPanel(pannello_training, wxID_ANY);
     wxBoxSizer* sizer_panel_tipo_metodo = new wxBoxSizer(wxHORIZONTAL);
 
-    auto m_static_text_tipo_di_metodo = new wxStaticText(m_panel_tipo_metodo, wxID_ANY, _("tipo di metodo"));
+    auto m_static_text_tipo_di_metodo = new wxStaticText(m_panel_tipo_metodo, wxID_ANY, _("kind of method"));
 
     wxArrayString m_choice_tipo_di_metodo_choices;
     m_choice_tipo_di_metodo_choices.Add(_("Full batch gradient descent"));
@@ -283,9 +256,13 @@ void MyFrame::CreateWindow()
     auto m_panel_numero_epoche = new wxPanel(pannello_training, wxID_ANY);
     wxBoxSizer* sizer_panel_numero_epoche = new wxBoxSizer(wxHORIZONTAL);
 
-    auto m_static_text_numero_epoche = new wxStaticText(m_panel_numero_epoche, wxID_ANY, _("numero epoche"));
+    auto m_static_text_numero_epoche = new wxStaticText(m_panel_numero_epoche, wxID_ANY, _("epochs number"));
     m_text_ctrl_numero_epoche = new wxTextCtrl(m_panel_numero_epoche, wxID_ANY, wxEmptyString);
 	m_text_ctrl_numero_epoche->SetValidator(wxTextValidator(wxFILTER_DIGITS, &m_numero_epoche));
+#ifdef _DEBUG
+    m_numero_epoche = "1000";
+    TransferDataToWindow();
+#endif
 
     sizer_panel_numero_epoche->Add(m_static_text_numero_epoche, 0, wxALL, 5);
     sizer_panel_numero_epoche->AddStretchSpacer(1);
@@ -301,6 +278,10 @@ void MyFrame::CreateWindow()
     auto m_static_text_learning_rate = new wxStaticText(m_panel_learning_rate, wxID_ANY, _("learning rate"));
     m_text_ctrl_learning_rate = new wxTextCtrl(m_panel_learning_rate, wxID_ANY, wxEmptyString);
     m_text_ctrl_learning_rate->SetValidator(wxTextValidator(wxFILTER_NUMERIC, &m_learning_rate));
+#ifdef _DEBUG
+    m_learning_rate = "1e-2";
+    TransferDataToWindow();
+#endif
 
     sizer_panel_learning_rate->Add(m_static_text_learning_rate, 0, wxALL, 5);
     sizer_panel_learning_rate->AddStretchSpacer(1);
@@ -313,10 +294,10 @@ void MyFrame::CreateWindow()
     auto m_panel_parallelizazione = new wxPanel(pannello_training, wxID_ANY);
     wxBoxSizer* sizer_panel_parallelizazione = new wxBoxSizer(wxHORIZONTAL);
 
-    auto m_static_text_parallelizzazione = new wxStaticText(m_panel_parallelizazione, wxID_ANY, _("parallelizazione"));
+    auto m_static_text_parallelizzazione = new wxStaticText(m_panel_parallelizazione, wxID_ANY, _("parallelization"));
 
     wxArrayString m_choice_parallelizzazione_choices;
-    m_choice_parallelizzazione_choices.Add(_("Seriale"));
+    m_choice_parallelizzazione_choices.Add(_("Serial"));
     m_choice_parallelizzazione_choices.Add(_("OpenMP"));
     m_choice_parallelizzazione = new wxChoice(m_panel_parallelizazione, wxID_ANY, wxDefaultPosition, wxDefaultSize, m_choice_parallelizzazione_choices);
     m_choice_parallelizzazione->SetSelection(0);
@@ -344,7 +325,6 @@ void MyFrame::CreateWindow()
     wxBoxSizer* sizer_pannello_bottoni = new wxBoxSizer(wxHORIZONTAL);
 
     SetUpRete = new wxButton(pannello_bottoni, wxID_ANY, _("SetUp rete"));
-    //AvviaRete->Disable();
     AvviaRete = new wxButton(pannello_bottoni, wxID_ANY, _("Avvia rete"));
     AvviaRete->Disable();   // si abilita dopo il setup
 
@@ -356,30 +336,11 @@ void MyFrame::CreateWindow()
     pannello_bottoni->SetSizer(sizer_pannello_bottoni);
     main_vertical_sizer->Add(pannello_bottoni, 0, wxEXPAND | wxALL, 5);
 
-    this->SetSizerAndFit(main_vertical_sizer);
+    this->SetSizer(main_vertical_sizer);
+    this->SetMinClientSize(FromDIP(wxSize(420, 550)));
+    this->Fit();
 
 }
-
-/*
-
-void MyFrame::OnClose(wxCloseEvent& event)
-{
-#ifdef _DEBUG
-    std::cout << "sto uscendo dall'applicazione\n";
-#endif
-
-    if (isProcessing)
-    {
-        event.Veto();
-        QuitRequest = true;
-    }
-    else
-    {
-        this->Destroy();
-    }
-}
-
-*/
 
 MyFrame::~MyFrame()
 {
@@ -408,9 +369,52 @@ void MyFrame::SetUpReteNeurale(wxCommandEvent& event)
     std::stoi(m_numero_epoche.ToStdString())    // numero_epoche
     ); 
 
-    Network->LeggiDati("generate_data/tangente_iperbolica.txt");
+    switch (m_tipo_regressione)
+    {
+        case 0:
+            Network->ReadInputData("training_data/linear.txt");
+            break;
+        case 1:
+            Network->ReadInputData("training_data/quadratic.txt");
+            break;
+        case 2:
+            Network->ReadInputData("training_data/cubic.txt");
+            break;
+        case 3:
+            Network->ReadInputData("training_data/abs.txt");
+            break;
+        case 4:
+            Network->ReadInputData("training_data/exp.txt");
+            break;
+        case 5:
+            Network->ReadInputData("training_data/sigmoid.txt");
+            break;
+        case 6:
+            Network->ReadInputData("training_data/tanh.txt");
+            break;
+        case 7:
+            Network->ReadInputData("training_data/inverse_quadratic.txt");
+            break;
+        case 8:
+            Network->ReadInputData("training_data/gaussian.txt");
+            break;
+        case 9:
+            Network->ReadInputData("training_data/sinx.txt");
+            break;
+        case 10:
+            Network->ReadInputData("training_data/cosx.txt");
+            break;
+        case 11:
+            Network->ReadInputData("training_data/sinc.txt");
+            break;
+        default:
+            Network->ReadInputData("training_data/tanh.txt");
+            break;
+    }
 
-    Network->Add({ TipoDiStrato::input,    1, TipoDiFunzione::Lineare });
+    
+
+    Network->Add({ TipoDiStrato::input,    1, TipoDiFunzione::Linear });
 
     /*
         Lineare             = 0,
@@ -437,7 +441,7 @@ void MyFrame::AggiornaParametri(wxCommandEvent& event)
 {
     TransferDataFromWindow();
 
-    // se anche uno solo dei campi � vuoto, non procedo oltre
+    // se anche uno solo dei campi è vuoto, non procedo oltre
     if (m_text_ctrl_numero_input->IsEmpty() || m_text_ctrl_output->IsEmpty() || 
     m_text_ctrl_neuroni_per_strato_nascosto->IsEmpty() || m_text_ctrl_strati_nascosti->IsEmpty())
     {
@@ -489,4 +493,9 @@ void MyFrame::OnSceltaFdAStratiNascosti(wxCommandEvent&)
 void MyFrame::OnSceltaFdAOutput(wxCommandEvent&)
 {
     m_tipo_funzione_output = (TipoDiFunzione)m_choice_output_activation->GetSelection();
+}
+
+void MyFrame::OnSceltaRegressione(wxCommandEvent&)
+{
+    m_tipo_regressione = m_choice_tipo_di_regressione->GetSelection();
 }

@@ -1,16 +1,16 @@
 #pragma once
 
-#include "FunzioneDiAttivazione.h"
+#include "ActivationFunction.h"
 
-class Neurone
+class Neuron
 {
 private:
-	FunzioneDiAttivazione m_funzione;
+	ActivationFunction m_funzione;
 	float m_input;
 	float m_output;
 	float m_bias;
 public:
-	Neurone(const FunzioneDiAttivazione&);
+	Neuron(const ActivationFunction&);
 
 	void SetInput(float);
 	void AddInput(float);

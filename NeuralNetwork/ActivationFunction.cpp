@@ -1,44 +1,44 @@
-#include "FunzioneDiAttivazione.h"
+#include "ActivationFunction.h"
 
-FunzioneDiAttivazione::FunzioneDiAttivazione(TipoDiFunzione tipo)
+ActivationFunction::ActivationFunction(TipoDiFunzione tipo)
 {
     switch (tipo)
     {
-    case TipoDiFunzione::Lineare:
-        m_tipo_funzione = TipoDiFunzione::Lineare;
+    case TipoDiFunzione::Linear:
+        m_tipo_funzione = TipoDiFunzione::Linear;
         break;
 
-    case TipoDiFunzione::Sigmoide:
-        m_tipo_funzione = TipoDiFunzione::Sigmoide;
+    case TipoDiFunzione::Sigmoid:
+        m_tipo_funzione = TipoDiFunzione::Sigmoid;
         break;
 
     case TipoDiFunzione::ReLU:
         m_tipo_funzione = TipoDiFunzione::ReLU;
         break;
 
-    case TipoDiFunzione::TangenteIperbolica:
-        m_tipo_funzione = TipoDiFunzione::TangenteIperbolica;
+    case TipoDiFunzione::Tanh:
+        m_tipo_funzione = TipoDiFunzione::Tanh;
 	    break;
 
-    case TipoDiFunzione::Quadratica:
-        m_tipo_funzione = TipoDiFunzione::Quadratica;
+    case TipoDiFunzione::Quadratic:
+        m_tipo_funzione = TipoDiFunzione::Quadratic;
         break;
 
     default:
-        m_tipo_funzione = TipoDiFunzione::Lineare;
+        m_tipo_funzione = TipoDiFunzione::Linear;
         break;
     }
 }
 
-float FunzioneDiAttivazione::CalcolaFunzione(float value)
+float ActivationFunction::CalculateValue(float value)
 {
     switch (m_tipo_funzione)
     {
-    case TipoDiFunzione::Lineare:
+    case TipoDiFunzione::Linear:
         return value;
         break;
 
-    case TipoDiFunzione::Sigmoide:
+    case TipoDiFunzione::Sigmoid:
         return 1.0f / (1.0f + exp(-value));
         break;
 
@@ -46,11 +46,11 @@ float FunzioneDiAttivazione::CalcolaFunzione(float value)
         return value > 0 ? value : 0;
         break;
 
-    case TipoDiFunzione::TangenteIperbolica:
+    case TipoDiFunzione::Tanh:
         return tanh(value);
 	    break;
 
-    case TipoDiFunzione::Quadratica:
+    case TipoDiFunzione::Quadratic:
         return value * value;
         break;
 
@@ -60,14 +60,14 @@ float FunzioneDiAttivazione::CalcolaFunzione(float value)
     }
 }
 
-float FunzioneDiAttivazione::CalcolaDerivata(float value)
+float ActivationFunction::CalculateDerivativeValue(float value)
 {
     switch (m_tipo_funzione)
     {
-    case TipoDiFunzione::Lineare:
+    case TipoDiFunzione::Linear:
         return 1.0f;
 
-    case TipoDiFunzione::Sigmoide:
+    case TipoDiFunzione::Sigmoid:
     {
         float sigmoid = 1.0f / (1.0f + exp(-value));
         return sigmoid * (1.0f - sigmoid);
@@ -76,11 +76,11 @@ float FunzioneDiAttivazione::CalcolaDerivata(float value)
     case TipoDiFunzione::ReLU:
         return value > 0 ? 1.0f : 0.0f;
 
-    case TipoDiFunzione::TangenteIperbolica:
+    case TipoDiFunzione::Tanh:
         return 1.0f - (tanh(value) * tanh(value));
         break;
 
-    case TipoDiFunzione::Quadratica:
+    case TipoDiFunzione::Quadratic:
         return 2.0 * value;
         break;
 

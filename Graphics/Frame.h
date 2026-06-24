@@ -19,6 +19,8 @@ private:
     void CheckParametri(wxCommandEvent& event);
     void OnSceltaFdAStratiNascosti(wxCommandEvent& e);
     void OnSceltaFdAOutput(wxCommandEvent& e);
+    void OnSceltaRegressione(wxCommandEvent& e);
+
 
 #ifdef _DEBUG
     void PrintWindowsSize(wxSizeEvent& event);
@@ -26,13 +28,7 @@ private:
     virtual ~MyFrame();
 
 private:
-    // ---- stato / logica ----
-    //ChartControl* plot_soluzione        = nullptr;
-    //ChartControl* plot_loss_function    = nullptr;
-    //bool isProcessing                   = false;
-    //std::atomic_bool QuitRequest        = false;
     NeuralNetwork* Network              = nullptr;
-    //std::thread background_thread;
 
     // ---- Architettura ----
     wxTextCtrl* m_text_ctrl_numero_input                = nullptr;
@@ -41,12 +37,14 @@ private:
     wxChoice* m_choice_strati_nascosti                  = nullptr;
     wxTextCtrl* m_text_ctrl_output                      = nullptr;
     wxChoice* m_choice_output_activation                = nullptr;
+    wxChoice* m_choice_tipo_di_regressione              = nullptr;
     wxString m_numero_input;
     wxString m_numero_strati_nascosti;
     wxString m_numero_neuroni_per_strato_nascosto;
     wxString m_numero_output;
     TipoDiFunzione m_tipo_funzione_strati_nascosti;
     TipoDiFunzione m_tipo_funzione_output;
+    int m_tipo_regressione;
 
     // ---- Riassunto rete ----
     wxStaticText* m_static_text_numero_pesi         = nullptr;

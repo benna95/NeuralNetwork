@@ -29,7 +29,7 @@ NetworkTrainingDialog::NetworkTrainingDialog(wxWindow* parent,
 
         plot_loss_function->title = "Loss Function";
 
-        main_sizer->Add(plot_soluzione, 2, wxEXPAND | wxALL, FromDIP(5));
+        main_sizer->Add(plot_soluzione,     2, wxEXPAND | wxALL, FromDIP(5));
         main_sizer->Add(plot_loss_function, 1, wxEXPAND | wxALL, FromDIP(5));
 
         SetSizer(main_sizer);
@@ -47,7 +47,7 @@ void NetworkTrainingDialog::StartTraining(NeuralNetwork* Network)
         auto training_function = [this](NeuralNetwork* Network)
             {
                 Network->Train(
-                    MetodoDiAddestramento::FullBatchGradientDescent,
+                    OptimizationAlgorithm::FullBatchGradientDescent,
                     plot_soluzione,
                     plot_loss_function,
                     QuitRequest
@@ -75,7 +75,7 @@ NetworkTrainingDialog::~NetworkTrainingDialog()
 void NetworkTrainingDialog::OnClose(wxCloseEvent& event)
 {
     #ifdef _DEBUG
-        std::cout << "sto uscendo dall'applicazione\n";
+        std::cout << "exiting from the application\n";
     #endif
 
     if (isProcessing)
