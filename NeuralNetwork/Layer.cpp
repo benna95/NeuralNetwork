@@ -3,17 +3,17 @@
 
 Layer::Layer(TipoDiStrato strato, int numero_neuroni, TipoDiFunzione funzione):
 m_tipo_di_strato(strato), m_numero_neuroni(numero_neuroni), m_funzione(funzione), 
-m_neuroni(numero_neuroni, FunzioneDiAttivazione(funzione))
+m_neurons(numero_neuroni, ActivationFunction(funzione))
 {
 
 }
 
-float Layer::ValutaFunzioneDiAttivazione(float value)
+float Layer::CalculateActivationFunction(float value)
 {
-	return m_funzione.CalcolaFunzione(value);
+	return m_funzione.CalculateValue(value);
 }
 
-float Layer::ValutaDerivataFunzioneDiAttivazione(float value)
+float Layer::CalculateDerivativeActivationFunction(float value)
 {
-	return m_funzione.CalcolaDerivata(value);
+	return m_funzione.CalculateDerivativeValue(value);
 }

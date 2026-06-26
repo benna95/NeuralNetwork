@@ -1,35 +1,65 @@
 #pragma once
-
 #include <atomic>
 #include <thread>
+#include <wx/wx.h>
+#include "NetworkTrainingDialog.h"
 
-#include "../NeuralNetwork/NeuralNetwork.h"
+wxDECLARE_EVENT(EVT_PARAMETRI_VALIDI, wxCommandEvent);
 
 class MyFrame : public wxFrame
 {
 public:
     MyFrame(const wxString& title, const wxPoint& pos, const wxSize& size);
-
 private:
-    void StartTraining();
-    void SetUpNeuralNetwork();
+    void StartTraining(wxCommandEvent&);
+    void CreateWindow();
+	void SetUpReteNeurale(wxCommandEvent& event);
     void OnClose(wxCloseEvent& event);
+    void AggiornaParametri(wxCommandEvent& event);
+    void CheckParametri(wxCommandEvent& event);
+    void OnSceltaFdAStratiNascosti(wxCommandEvent& e);
+    void OnSceltaFdAOutput(wxCommandEvent& e);
+    void OnSceltaRegressione(wxCommandEvent& e);
+
 
 #ifdef _DEBUG
     void PrintWindowsSize(wxSizeEvent& event);
 #endif
-
     virtual ~MyFrame();
 
 private:
-    ChartControl* plot_soluzione = nullptr;
-    ChartControl* plot_loss_function = nullptr;
+    NeuralNetwork* Network              = nullptr;
 
-    bool isProcessing = false;
+    // ---- Architettura ----
+    wxTextCtrl* m_text_ctrl_numero_input                = nullptr;
+    wxTextCtrl* m_text_ctrl_strati_nascosti             = nullptr;
+    wxTextCtrl* m_text_ctrl_neuroni_per_strato_nascosto = nullptr;
+    wxChoice* m_choice_strati_nascosti                  = nullptr;
+    wxTextCtrl* m_text_ctrl_output                      = nullptr;
+    wxChoice* m_choice_output_activation                = nullptr;
+    wxChoice* m_choice_tipo_di_regressione              = nullptr;
+    wxString m_numero_input;
+    wxString m_numero_strati_nascosti;
+    wxString m_numero_neuroni_per_strato_nascosto;
+    wxString m_numero_output;
+    TipoDiFunzione m_tipo_funzione_strati_nascosti;
+    TipoDiFunzione m_tipo_funzione_output;
+    int m_tipo_regressione;
 
-    std::atomic_bool QuitRequest = false;
+    // ---- Riassunto rete ----
+    wxStaticText* m_static_text_numero_pesi         = nullptr;
+    wxStaticText* m_static_text_numero_bias         = nullptr;
+    wxStaticText* m_static_text_parametri_totali    = nullptr;
 
-    NeuralNetwork* Network = nullptr;
+    // ---- Training ----
+    wxChoice* m_choice_tipo_di_metodo       = nullptr;
+    wxTextCtrl* m_text_ctrl_numero_epoche   = nullptr;
+    wxTextCtrl* m_text_ctrl_learning_rate   = nullptr;
+    wxChoice* m_choice_parallelizzazione    = nullptr;
+    wxString m_learning_rate;
+    wxString m_numero_epoche;
 
-    std::thread background_thread;
+    // ---- Bottoni ----
+    wxButton* Setup = nullptr;
+    wxButton* Run = nullptr;
 };

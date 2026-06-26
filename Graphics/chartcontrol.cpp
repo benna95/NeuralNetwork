@@ -35,28 +35,27 @@ ChartControl::ChartControl(
 void ChartControl::OnPaint(wxPaintEvent& evt)
 {
 #ifdef _DEBUG
-    std::cout << "OnPaint chiamato\n";
+    std::cout << "OnPaint called\n";
 #endif // _DEBUG
 
     wxAutoBufferedPaintDC dc(this);
     dc.Clear();
 
-    wxGraphicsContext* gc = wxGraphicsContext::Create(dc);
+    dc.SetFont(*wxNORMAL_FONT);
+    const double normalFontH = static_cast<double>(dc.GetCharHeight());
 
     if (grafico == TipodiGrafico::soluzione)
     {
         if (values[1].size() <= 0)
-        {
             return;
-        }
     }
     else
     {
         if (values[0].size() <= 0)
-        {
             return;
-        }
     }
+
+    wxGraphicsContext* gc = wxGraphicsContext::Create(dc);
 
     if (gc)
     {
@@ -81,7 +80,7 @@ void ChartControl::OnPaint(wxPaintEvent& evt)
 
         const double titleTopBottomMinimumMargin = this->FromDIP(10);
 
-        // Il rettangolo è definito tramite coordinata in alto a SX,
+        // Il rettangolo Ã¨ definito tramite coordinata in alto a SX,
         // larghezza e altezza.
         wxRect2DDouble fullArea{
             0,
@@ -90,17 +89,17 @@ void ChartControl::OnPaint(wxPaintEvent& evt)
             static_cast<double>(GetSize().GetHeight())
         };
 
-        const double marginX = fullArea.GetSize().GetWidth() / 8.0;
+        const double marginX = fullArea.GetSize().GetWidth() / 16.0;
         const double marginTop = std::max(
-            fullArea.GetSize().GetHeight() / 8.0,
+            fullArea.GetSize().GetHeight() / 16.0,
             titleTopBottomMinimumMargin * 2.0 + th
         );
-        const double marginBottom = fullArea.GetSize().GetHeight() / 8.0;
         double labelsToChartAreaMargin = this->FromDIP(10);
+        const double marginBottom = labelsToChartAreaMargin * 3.0 + normalFontH * 2.0;
 
         wxRect2DDouble chartArea = fullArea;
 
-        // Partendo da fullArea, creo chartArea, cioè l'area del grafico
+        // Partendo da fullArea, creo chartArea, cioï¿½ l'area del grafico
         // delimitata dai margini.
         chartArea.Inset(marginX, marginTop, marginX, marginBottom);
 
@@ -251,7 +250,7 @@ void ChartControl::OnPaint(wxPaintEvent& evt)
             gc->DrawText(
                 text,
                 lineStartPoint.m_x - tw / 2,
-                fullArea.GetHeight() - labelsToChartAreaMargin - th
+                chartArea.GetBottom() + labelsToChartAreaMargin
             );
         }
 
@@ -269,14 +268,14 @@ void ChartControl::OnPaint(wxPaintEvent& evt)
             wxSystemSettings::GetAppearance().IsDark() ? *wxWHITE : *wxBLACK
         );
 
-        auto testo_iterazione = wxString::Format("Epoca numero: %d", numero_epoca);
+        auto testo_iterazione = wxString::Format("Epoch: %d", numero_epoca);
 
         gc->GetTextExtent(testo_iterazione, &tw, &th);
 
-        auto x_pos = 1.05 * chartArea.GetLeft();
-        auto y_pos = 1.05 * chartArea.GetTop();
+        auto testo_iterazione_xcoord = 1.05 * chartArea.GetLeft();
+        auto testo_iterazione_ycoord = 1.05 * chartArea.GetTop();
 
-        gc->DrawText(testo_iterazione, x_pos, y_pos);
+        gc->DrawText(testo_iterazione, testo_iterazione_xcoord, testo_iterazione_ycoord);
 
         /*----------------- numero epoca corrente ----------------*/
 
@@ -289,60 +288,36 @@ void ChartControl::OnPaint(wxPaintEvent& evt)
 
         /*------------------------ legenda -----------------------*/
 
-        auto legend_height = 0.15 * chartArea.GetHeight();
-        auto legend_width = 0.10 * chartArea.GetWidth();
-
-        // Posizione relativa al chart.
-        x_pos = chartArea.GetLeft() + 0.85 * chartArea.GetWidth();
-        y_pos = chartArea.GetTop()  + 0.78 * chartArea.GetHeight();
-
-        wxRect2DDouble legend(x_pos, y_pos, legend_width, legend_height);
-
-        // Bordo legenda.
-        gc->SetPen(wxPen(*wxBLACK, 2));
-        gc->SetBrush(*wxTRANSPARENT_BRUSH);
-        gc->DrawRectangle(legend);
-
-        double padding = 0.10 * legend_height;
-        double symbolSize = 0.18 * legend_height;
-
-        double startX = legend.m_x + padding;
-        double lineEndX = startX + 0.25 * legend_width;
-        double textX = lineEndX + padding;
-
-        double y1 = legend.m_y + 0.30 * legend_height;
-        double y2 = legend.m_y + 0.70 * legend_height;
-
         if (grafico == TipodiGrafico::soluzione)
         {
-            gc->SetPen(wxPen(*wxBLUE, 3));
+            const double lineLen      = this->FromDIP(25);
+            const double symbolRadius = this->FromDIP(5);
+            const double gap          = this->FromDIP(5);
+            const double itemSpacing  = this->FromDIP(10);
+
+            double twT, thT, twP, thP;
+            gc->SetFont(*wxNORMAL_FONT,
+                wxSystemSettings::GetAppearance().IsDark() ? *wxWHITE : *wxBLACK);
+            gc->GetTextExtent("Target",     &twT, &thT);
+            gc->GetTextExtent("Prediction", &twP, &thP);
+
+            const double legendY = chartArea.GetBottom() + labelsToChartAreaMargin * 2.0 + normalFontH;
+            const double totalWidth  = lineLen + gap + twT + itemSpacing + lineLen + gap + twP;
+            double x = (fullArea.GetWidth() - totalWidth) / 2.0;
+
+            // Target: puntini blu
+            gc->SetPen(*wxTRANSPARENT_PEN);
             gc->SetBrush(*wxBLUE_BRUSH);
-            gc->StrokeLine(startX, y1, lineEndX, y1);
-        }
-        else
-        {
+            gc->DrawEllipse(x + lineLen / 2.0 - symbolRadius,
+                            legendY - symbolRadius,
+                            symbolRadius * 2, symbolRadius * 2);
+            gc->DrawText("Target", x + lineLen + gap, legendY - thT / 2.0);
+            x += lineLen + gap + twT + itemSpacing;
+
+            // Predizione: linea rossa
             gc->SetPen(wxPen(*wxRED, 3));
-            gc->SetBrush(*wxRED_BRUSH);
-            gc->StrokeLine(startX, (y1 + y2) * 0.5, lineEndX, (y1 + y2) * 0.5);
-        }
-
-        gc->SetFont(GetFont(), *wxBLACK);
-
-        if (grafico == TipodiGrafico::soluzione)
-        {
-            gc->DrawText("Target", textX, y1 - symbolSize * 0.5);
-        }
-        else
-        {
-            gc->DrawText("Loss Function", textX, y1 - symbolSize * 0.5);
-        }
-
-        if (grafico == TipodiGrafico::soluzione)
-        {
-            gc->SetPen(wxPen(*wxRED, 3));
-
-            gc->StrokeLine(startX, y2, lineEndX, y2);
-            gc->DrawText("Predizione", textX, y2 - symbolSize * 0.5);
+            gc->StrokeLine(x, legendY, x + lineLen, legendY);
+            gc->DrawText("Prediction", x + lineLen + gap, legendY - thP / 2.0);
         }
 
         /*------------------------ legenda -----------------------*/

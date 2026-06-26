@@ -1,8 +1,7 @@
 #pragma once
 
 #include <vector>
-#include "FunzioneDiAttivazione.h"
-#include "Neurone.h"
+#include "Neuron.h"
 
 enum class TipoDiStrato
 {
@@ -16,13 +15,13 @@ class Layer
 public:
 	int m_numero_neuroni;
 
-	std::vector<Neurone> m_neuroni;
+	std::vector<Neuron> m_neurons;
 
 	Layer(TipoDiStrato, int, TipoDiFunzione);
 
 	TipoDiStrato m_tipo_di_strato;
-	FunzioneDiAttivazione m_funzione;
+	ActivationFunction m_funzione;
 
-	float ValutaFunzioneDiAttivazione(float value);
-	float ValutaDerivataFunzioneDiAttivazione(float value);
+	float CalculateActivationFunction(float value);
+	float CalculateDerivativeActivationFunction(float value);
 };
