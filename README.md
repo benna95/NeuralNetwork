@@ -48,7 +48,6 @@ NeuralNetwork/
 │   └── chartcontrol.h/cpp     # Custom chart widget (loss + prediction)
 ├── Utils/
 │   └── VectorOperations.h/cpp # Vector math for gradient computations
-├── generate_data/             # Python scripts to produce training datasets
 ├── training_data/             # Pre-generated CSV datasets
 └── assets/                    # Application icon
 ```
