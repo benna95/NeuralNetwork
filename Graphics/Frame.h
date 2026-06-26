@@ -60,6 +60,6 @@ private:
     wxString m_numero_epoche;
 
     // ---- Bottoni ----
-    wxButton* SetUpRete = nullptr;
-    wxButton* AvviaRete = nullptr;
+    wxButton* Setup = nullptr;
+    wxButton* Run = nullptr;
 };

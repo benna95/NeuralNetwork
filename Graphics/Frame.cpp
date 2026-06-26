@@ -11,14 +11,16 @@ MyFrame::MyFrame(const wxString& title, const wxPoint& pos, const wxSize& size)
 
     CreateWindow();
 
-	SetUpRete->Bind(wxEVT_BUTTON, &MyFrame::SetUpReteNeurale, this);
-	AvviaRete->Bind(wxEVT_BUTTON, &MyFrame::StartTraining, this);
+	Setup->Bind(wxEVT_BUTTON, &MyFrame::SetUpReteNeurale, this);
+	Run->Bind(wxEVT_BUTTON, &MyFrame::StartTraining, this);
 
 
     m_text_ctrl_numero_input->Bind(wxEVT_TEXT, &MyFrame::CheckParametri, this);
     m_text_ctrl_strati_nascosti->Bind(wxEVT_TEXT, &MyFrame::CheckParametri, this);
     m_text_ctrl_neuroni_per_strato_nascosto->Bind(wxEVT_TEXT, &MyFrame::CheckParametri, this);
     m_text_ctrl_output->Bind(wxEVT_TEXT, &MyFrame::CheckParametri, this);
+    m_text_ctrl_learning_rate->Bind(wxEVT_TEXT, &MyFrame::CheckParametri, this);
+    m_text_ctrl_numero_epoche->Bind(wxEVT_TEXT, &MyFrame::CheckParametri, this);
 
     Bind(EVT_PARAMETRI_VALIDI, &MyFrame::AggiornaParametri, this);
 
@@ -30,9 +32,11 @@ MyFrame::MyFrame(const wxString& title, const wxPoint& pos, const wxSize& size)
 void MyFrame::StartTraining(wxCommandEvent &)
 {
     NetworkTrainingDialog dialog(this, wxID_ANY, "progress",
-                                 wxDefaultPosition, wxSize(1800, 930));
+                                 wxPoint(0, 0), wxSize(1800, 930));
     dialog.StartTraining(Network);
     dialog.ShowModal();
+
+    Run->Disable();
 }
 
 void MyFrame::CreateWindow()
@@ -71,7 +75,7 @@ void MyFrame::CreateWindow()
     m_choice_tipo_di_regressione = new wxChoice(m_panel_tipo_regressione, wxID_ANY, wxDefaultPosition, wxDefaultSize, tipo_di_regressione);
     m_choice_tipo_di_regressione->SetSelection(0);
 
-    auto m_static_text_regressione = new wxStaticText(m_panel_tipo_regressione, wxID_ANY, _("kind of regression"));
+    auto m_static_text_regressione = new wxStaticText(m_panel_tipo_regressione, wxID_ANY, _("regression"));
 
     sizer_panel_tipo_regressione->Add(m_static_text_regressione, 0, wxALL, 5);
     sizer_panel_tipo_regressione->AddStretchSpacer(1);
@@ -84,13 +88,12 @@ void MyFrame::CreateWindow()
     auto m_panel_num_input = new wxPanel(pannello_architettura, wxID_ANY);
     wxBoxSizer* sizer_panel_num_input = new wxBoxSizer(wxHORIZONTAL);
 
-    auto m_static_text_numero_input = new wxStaticText(m_panel_num_input, wxID_ANY, _("input numbers"));
+    auto m_static_text_numero_input = new wxStaticText(m_panel_num_input, wxID_ANY, _("number of input"));
     m_text_ctrl_numero_input = new wxTextCtrl(m_panel_num_input, wxID_ANY, wxEmptyString);
     m_text_ctrl_numero_input->SetValidator(wxTextValidator(wxFILTER_DIGITS, &m_numero_input));
-#ifdef _DEBUG
     m_numero_input = "1";
     TransferDataToWindow();
-#endif
+    m_text_ctrl_numero_input->Disable();
 
     sizer_panel_num_input->Add(m_static_text_numero_input, 0, wxALL, 5);
     sizer_panel_num_input->AddStretchSpacer(1);
@@ -154,13 +157,12 @@ void MyFrame::CreateWindow()
     auto m_panel_output = new wxPanel(pannello_architettura, wxID_ANY);
     wxBoxSizer* sizer_panel_output = new wxBoxSizer(wxHORIZONTAL);
 
-    auto m_static_text_output = new wxStaticText(m_panel_output, wxID_ANY, _("output"));
+    auto m_static_text_output = new wxStaticText(m_panel_output, wxID_ANY, _("number of output"));
     m_text_ctrl_output = new wxTextCtrl(m_panel_output, wxID_ANY, wxEmptyString);
     m_text_ctrl_output->SetValidator(wxTextValidator(wxFILTER_DIGITS, &m_numero_output));
-#ifdef _DEBUG
     m_numero_output = "1";
     TransferDataToWindow();
-#endif
+    m_text_ctrl_output->Disable();
 
     wxArrayString m_choice_output_choices;
     m_choice_output_choices.Add(_("Linear"));
@@ -192,7 +194,7 @@ void MyFrame::CreateWindow()
     auto staticline3 = new wxStaticLine(pannello_parametri, wxID_ANY);
     sizer_pannello_parametri->Add(staticline3, 0, wxEXPAND | wxALL, 5);
 
-    auto m_static_text_riassunto_rete = new wxStaticText(pannello_parametri, wxID_ANY, _("Network recap"));
+    auto m_static_text_riassunto_rete = new wxStaticText(pannello_parametri, wxID_ANY, _("Model summary"));
     m_static_text_riassunto_rete->SetFont(wxFont(14, wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD));
     sizer_pannello_parametri->Add(m_static_text_riassunto_rete, 0, wxALL | wxALIGN_CENTER_HORIZONTAL, 5);
 
@@ -238,7 +240,7 @@ void MyFrame::CreateWindow()
     auto m_panel_tipo_metodo = new wxPanel(pannello_training, wxID_ANY);
     wxBoxSizer* sizer_panel_tipo_metodo = new wxBoxSizer(wxHORIZONTAL);
 
-    auto m_static_text_tipo_di_metodo = new wxStaticText(m_panel_tipo_metodo, wxID_ANY, _("kind of method"));
+    auto m_static_text_tipo_di_metodo = new wxStaticText(m_panel_tipo_metodo, wxID_ANY, _("optimization algorithm"));
 
     wxArrayString m_choice_tipo_di_metodo_choices;
     m_choice_tipo_di_metodo_choices.Add(_("Full batch gradient descent"));
@@ -256,7 +258,7 @@ void MyFrame::CreateWindow()
     auto m_panel_numero_epoche = new wxPanel(pannello_training, wxID_ANY);
     wxBoxSizer* sizer_panel_numero_epoche = new wxBoxSizer(wxHORIZONTAL);
 
-    auto m_static_text_numero_epoche = new wxStaticText(m_panel_numero_epoche, wxID_ANY, _("epochs number"));
+    auto m_static_text_numero_epoche = new wxStaticText(m_panel_numero_epoche, wxID_ANY, _("number of epochs"));
     m_text_ctrl_numero_epoche = new wxTextCtrl(m_panel_numero_epoche, wxID_ANY, wxEmptyString);
 	m_text_ctrl_numero_epoche->SetValidator(wxTextValidator(wxFILTER_DIGITS, &m_numero_epoche));
 #ifdef _DEBUG
@@ -298,7 +300,7 @@ void MyFrame::CreateWindow()
 
     wxArrayString m_choice_parallelizzazione_choices;
     m_choice_parallelizzazione_choices.Add(_("Serial"));
-    m_choice_parallelizzazione_choices.Add(_("OpenMP"));
+    //m_choice_parallelizzazione_choices.Add(_("OpenMP"));
     m_choice_parallelizzazione = new wxChoice(m_panel_parallelizazione, wxID_ANY, wxDefaultPosition, wxDefaultSize, m_choice_parallelizzazione_choices);
     m_choice_parallelizzazione->SetSelection(0);
 
@@ -324,13 +326,13 @@ void MyFrame::CreateWindow()
     auto pannello_bottoni = new wxPanel(this, wxID_ANY);
     wxBoxSizer* sizer_pannello_bottoni = new wxBoxSizer(wxHORIZONTAL);
 
-    SetUpRete = new wxButton(pannello_bottoni, wxID_ANY, _("SetUp rete"));
-    AvviaRete = new wxButton(pannello_bottoni, wxID_ANY, _("Avvia rete"));
-    AvviaRete->Disable();   // si abilita dopo il setup
+    Setup = new wxButton(pannello_bottoni, wxID_ANY, _("Setup"));
+    Run = new wxButton(pannello_bottoni, wxID_ANY, _("Run"));
+    Run->Disable();   // si abilita dopo il setup
 
     sizer_pannello_bottoni->AddStretchSpacer(1);
-    sizer_pannello_bottoni->Add(SetUpRete, 0, wxALL, 5);
-    sizer_pannello_bottoni->Add(AvviaRete, 0, wxALL, 5);
+    sizer_pannello_bottoni->Add(Setup, 0, wxALL, 5);
+    sizer_pannello_bottoni->Add(Run, 0, wxALL, 5);
     sizer_pannello_bottoni->AddStretchSpacer(1);
 
     pannello_bottoni->SetSizer(sizer_pannello_bottoni);
@@ -339,6 +341,12 @@ void MyFrame::CreateWindow()
     this->SetSizer(main_vertical_sizer);
     this->SetMinClientSize(FromDIP(wxSize(420, 550)));
     this->Fit();
+
+#ifndef _DEBUG
+    Setup->Disable();
+#endif // !_DEBUG
+
+    
 
 }
 
@@ -434,7 +442,7 @@ void MyFrame::SetUpReteNeurale(wxCommandEvent& event)
     Network->InizializzaPesieBias();
     Network->CreaMatriceConnessioni();
 
-	AvviaRete->Enable();
+	Run->Enable();
 }
 
 void MyFrame::AggiornaParametri(wxCommandEvent& event)
@@ -464,13 +472,26 @@ void MyFrame::AggiornaParametri(wxCommandEvent& event)
     numero_totale_bias += numero_output;                                                    // bias dello strato output
 
     m_static_text_numero_pesi->SetLabel(
-        wxString::Format("numero pesi: %d", numero_totale_pesi));
+        wxString::Format("number of weights: %d", numero_totale_pesi));
     m_static_text_numero_bias->SetLabel(
-        wxString::Format("numero bias: %d", numero_totale_bias));
+        wxString::Format("number of bias: %d", numero_totale_bias));
     m_static_text_parametri_totali->SetLabel(
-        wxString::Format("parametri totali: %d", numero_totale_pesi + numero_totale_bias));
+        wxString::Format("total parameters: %d", numero_totale_pesi + numero_totale_bias));
 
     this->Layout();
+
+
+#ifndef _DEBUG
+    if (m_text_ctrl_learning_rate->IsEmpty() || m_text_ctrl_numero_epoche->IsEmpty())
+    {
+        return;
+    }
+    else
+    {
+        Setup->Enable();
+    }
+   
+#endif // !_DEBUG
 }
 
 void MyFrame::CheckParametri(wxCommandEvent& event)
