@@ -7,7 +7,7 @@ public:
 };
 
 #ifdef _DEBUG
-wxIMPLEMENT_APP(MyApp);
+wxIMPLEMENT_APP_CONSOLE(MyApp);
 #else
 wxIMPLEMENT_APP(MyApp);
 #endif // _DEBUG
