@@ -36,6 +36,7 @@ A from-scratch implementation of a fully-connected feedforward neural network in
 
 ```
 NeuralNetwork/
+├── CMakeLists.txt             # Build system
 ├── main.cpp                   # Entry point
 ├── NeuralNetwork/             # Core neural network
 │   ├── NeuralNetwork.h/cpp    # Training loop, forward/backward pass, weight update
@@ -48,8 +49,8 @@ NeuralNetwork/
 │   └── chartcontrol.h/cpp     # Custom chart widget (loss + prediction)
 ├── Utils/
 │   └── VectorOperations.h/cpp # Vector math for gradient computations
-├── training_data/             # Pre-generated CSV datasets
-└── assets/                    # Application icon
+├── assets/                    # Icons, manifests, and platform resources
+└── training_data/             # Pre-generated CSV datasets
 ```
 
 ---
@@ -58,22 +59,33 @@ NeuralNetwork/
 
 | Dependency | Version |
 |---|---|
-| Visual Studio | 2022 (toolset v143) |
-| wxWidgets | 3.3.1 |
-| C++ standard | C++17 |
+| CMake | 3.14+ |
+| C++ compiler | C++17 (MSVC, GCC, Clang) |
+| Git | any (used by FetchContent) |
 
+wxWidgets is fetched and built automatically by CMake — no manual installation needed.
 
 ---
 
 ## Build
 
-Open `NeuralNetwork.sln` in Visual Studio 2022 and build in **Release | x64** or **Debug | x64**.
+### Windows
 
-```
-msbuild NeuralNetwork.sln /p:Configuration=Release /p:Platform=x64
+```bash
+cmake -B build -G "Visual Studio 17 2022" -A x64
+cmake --build build --config Release
 ```
 
-The executable is written to `bin/x64/Release/`.
+The executable is written to `build/Release/`.
+
+### Linux
+
+```bash
+cmake -B build -DCMAKE_BUILD_TYPE=Release
+cmake --build build
+```
+
+The executable is written to `build/`.
 
 ---
 
@@ -89,6 +101,6 @@ The executable is written to `bin/x64/Release/`.
 
 ## Training Data
 
-Pre-generated datasets live in `training_data/`. Each .txt contains `(x, y)` pairs sampled from the corresponding function.
+Pre-generated datasets live in `training_data/`. Each `.txt` contains `(x, y)` pairs sampled from the corresponding function.
 
 Supported functions: `linear`, `quadratic`, `cubic`, `sin`, `cos`, `exp`, `sigmoid`, `tanh`, `gaussian`, `sinc`, `abs`.

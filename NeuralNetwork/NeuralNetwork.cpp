@@ -1,22 +1,19 @@
 #include <iostream>
 #include <sstream>
-#include <thread>
 
 #include "NeuralNetwork.h"
 
-
-NeuralNetwork::NeuralNetwork(int m_numero_input, int dimensione_dataset, float learning_rate, int epoche): m_layers_number(0), 
-m_inputs_number(m_numero_input), m_dataset_size(dimensione_dataset), x(dimensione_dataset), 
-y_target(dimensione_dataset), y_pred(dimensione_dataset), epochs_number(epoche), m_learning_rate(learning_rate), 
-m_indexes(dimensione_dataset), m_error(epoche), y_pred_original(m_dataset_size), 
-y_target_original(m_dataset_size) {}
+NeuralNetwork::NeuralNetwork(int m_numero_input, int dimensione_dataset, float learning_rate, int epoche) : m_layers_number(0),
+																											m_inputs_number(m_numero_input), m_dataset_size(dimensione_dataset), x(dimensione_dataset),
+																											y_target(dimensione_dataset), y_pred(dimensione_dataset), epochs_number(epoche), m_learning_rate(learning_rate),
+																											m_indexes(dimensione_dataset), m_error(epoche), y_pred_original(m_dataset_size),
+																											y_target_original(m_dataset_size) {}
 
 void NeuralNetwork::Add(Layer layer)
 {
 	Layers.emplace_back(layer);
 	m_layers_number++;
 }
-
 
 void NeuralNetwork::CreaMatriceConnessioni()
 {
@@ -37,8 +34,8 @@ void NeuralNetwork::CreaMatriceConnessioni()
 
 	for (int i = 0; i < m_layers_number - 1; i++)
 	{
-		int numero_neuroni_strato_corrente		= Layers[i].m_neurons.size();
-		int numero_neuroni_strato_successivo	= Layers[i + 1].m_neurons.size();
+		int numero_neuroni_strato_corrente = Layers[i].m_neurons.size();
+		int numero_neuroni_strato_successivo = Layers[i + 1].m_neurons.size();
 
 		// int inizio_strato_corrente		= offset_strati[i];
 		// int inizio_strato_successivo		= offset_strati[i + 1];
@@ -50,10 +47,10 @@ void NeuralNetwork::CreaMatriceConnessioni()
 		{
 			for (int k = 0; k < numero_neuroni_strato_successivo; k++)
 			{
-				int indice_neurone_corrente		= j;
-				int indice_neurone_successivo	= k;
+				int indice_neurone_corrente = j;
+				int indice_neurone_successivo = k;
 
-				connessioni_locali.push_back({ indice_neurone_corrente, indice_neurone_successivo });
+				connessioni_locali.push_back({indice_neurone_corrente, indice_neurone_successivo});
 			}
 		}
 
@@ -70,11 +67,11 @@ void NeuralNetwork::InizializzaPesieBias()
 	std::mt19937 rng(rd());
 #endif
 
-    std::uniform_real_distribution<float> dist(-0.5f, 0.5f);
+	std::uniform_real_distribution<float> dist(-0.5f, 0.5f);
 	m_delta.resize(Layers.size());
 
-    for (int i = 0; i < Layers.size(); i++)
-    {
+	for (int i = 0; i < Layers.size(); i++)
+	{
 		m_delta[i].resize(Layers[i].m_neurons.size(), 0.0f);
 		if (Layers[i].m_tipo_di_strato == TipoDiStrato::input)
 		{
@@ -83,17 +80,16 @@ void NeuralNetwork::InizializzaPesieBias()
 			m_weights_number.push_back(numero_pesi);
 			m_weights_gradient.emplace_back(numero_pesi);
 
-			for (auto& peso : m_weights.back())
+			for (auto &peso : m_weights.back())
 			{
 				peso = dist(rng);
 #ifdef _DEBUG
 				std::cout << "peso: " << peso << std::endl;
 #endif // _DEBUG
 			}
-                
-        }
-        else if (Layers[i].m_tipo_di_strato == TipoDiStrato::nascosto)
-        {
+		}
+		else if (Layers[i].m_tipo_di_strato == TipoDiStrato::nascosto)
+		{
 			int numero_pesi = Layers[i].m_numero_neuroni * Layers[i + 1].m_numero_neuroni;
 			m_weights.emplace_back(numero_pesi);
 			m_weights_number.push_back(numero_pesi);
@@ -104,29 +100,14 @@ void NeuralNetwork::InizializzaPesieBias()
 			m_bias_number.push_back(numero_bias);
 			m_bias_gradient.emplace_back(numero_bias);
 
-			for (auto& peso : m_weights.back())
+			for (auto &peso : m_weights.back())
 			{
 				peso = dist(rng);
 #ifdef _DEBUG
 				std::cout << "weight: " << peso << std::endl;
 #endif // _DEBUG
 			}
-			for (auto& bias : m_bias.back())
-			{
-				bias = 0;
-#ifdef _DEBUG
-				std::cout << "bias: " << bias << std::endl;
-#endif // _DEBUG
-			}
-        }
-		else // Layers[i].m_tipo_di_strato == TipoDiStrato::output
-		{
-			int numero_bias = Layers[i].m_numero_neuroni;
-			m_bias.emplace_back(numero_bias);
-			m_bias_number.push_back(numero_bias);
-			m_bias_gradient.emplace_back(numero_bias);
-
-			for (auto& bias : m_bias.back())
+			for (auto &bias : m_bias.back())
 			{
 				bias = 0;
 #ifdef _DEBUG
@@ -134,14 +115,29 @@ void NeuralNetwork::InizializzaPesieBias()
 #endif // _DEBUG
 			}
 		}
-    }
+		else // Layers[i].m_tipo_di_strato == TipoDiStrato::output
+		{
+			int numero_bias = Layers[i].m_numero_neuroni;
+			m_bias.emplace_back(numero_bias);
+			m_bias_number.push_back(numero_bias);
+			m_bias_gradient.emplace_back(numero_bias);
+
+			for (auto &bias : m_bias.back())
+			{
+				bias = 0;
+#ifdef _DEBUG
+				std::cout << "bias: " << bias << std::endl;
+#endif // _DEBUG
+			}
+		}
+	}
 }
 
 void NeuralNetwork::ResetNeuroni()
 {
 	for (size_t i = 0; i < Layers.size(); i++)
 	{
-		for (int j = 0; j < Layers[i].m_neurons.size(); j++) 
+		for (int j = 0; j < Layers[i].m_neurons.size(); j++)
 		{
 			Layers[i].m_neurons[j].Reset();
 		}
@@ -170,7 +166,7 @@ float NeuralNetwork::CalcolaDerivataLoss()
 		somma += 2 * (y_pred[i] - y_target[i]);
 	}
 
-	return somma/m_dataset_size;
+	return somma / m_dataset_size;
 }
 
 float NeuralNetwork::CalcolaLoss_i(int index)
@@ -183,7 +179,7 @@ float NeuralNetwork::CalcolaDerivataLoss_i(int index)
 	return 2 * (y_pred[index] - y_target[index]);
 }
 
-void NeuralNetwork::ReadInputData(const char* filepath)
+void NeuralNetwork::ReadInputData(const char *filepath)
 {
 	std::ifstream file(filepath);
 	if (!file)
@@ -203,14 +199,14 @@ void NeuralNetwork::ReadInputData(const char* filepath)
 	{
 		while (std::getline(file, line))
 		{
-			//std::cout << line << std::endl;
+			// std::cout << line << std::endl;
 
 			std::stringstream ss(line);
 
 			std::getline(ss, x_value, ',');
 			std::getline(ss, y_value, ',');
 
-			x[i]		= std::stof(x_value);
+			x[i] = std::stof(x_value);
 			y_target[i] = std::stof(y_value);
 			i++;
 		}
@@ -265,8 +261,8 @@ void NeuralNetwork::BackPropagation(int campione_dataset)
 	{
 		m_delta[L][n] = Layers[L].m_neurons[n].ApplicaDerivataFdA() * CalcolaDerivataLoss_i(i);
 	}
-	
-	// calcolo delta per i neuroni degli strati nascosti, partendo 
+
+	// calcolo delta per i neuroni degli strati nascosti, partendo
 	// dall'ultimo strato nascosto e risalendo fino al primo strato nascosto
 	for (int j = L - 1; j >= 1; j--)
 	{
@@ -277,8 +273,8 @@ void NeuralNetwork::BackPropagation(int campione_dataset)
 			for (int c = 0; c < m_connections_vector[j].size(); c++)
 			{
 				auto [from, to] = m_connections_vector[j][c];
-				// sto calcolando il delta del neurone corrente n; questa condizione mi serve  
-				// per capire se la connessione c-esima appartiene al neurone che sto considerando, 
+				// sto calcolando il delta del neurone corrente n; questa condizione mi serve
+				// per capire se la connessione c-esima appartiene al neurone che sto considerando,
 				// cioè se arriva al neurone n dello strato subito successivo, ossia neurone n, strato j + 1
 				if (from == n)
 				{
@@ -315,7 +311,7 @@ void NeuralNetwork::BackPropagation(int campione_dataset)
 
 void NeuralNetwork::InizializzaGradienti()
 {
-	
+
 	for (size_t i = 0; i < m_weights_gradient.size(); i++)
 	{
 		for (size_t j = 0; j < m_weights_gradient[i].size(); j++)
@@ -335,7 +331,7 @@ void NeuralNetwork::InizializzaGradienti()
 
 void NeuralNetwork::ProcessaGradienti()
 {
-	
+
 	for (size_t i = 0; i < m_weights_gradient.size(); i++)
 	{
 		for (size_t j = 0; j < m_weights_gradient[i].size(); j++)
@@ -351,8 +347,6 @@ void NeuralNetwork::ProcessaGradienti()
 			m_bias_gradient[i][j] /= m_dataset_size;
 		}
 	}
-	
-	
 }
 
 void NeuralNetwork::AggiornaPesieBias()
@@ -377,16 +371,16 @@ void NeuralNetwork::AggiornaPesieBias()
 }
 
 /* full batch gradient descent:
-* 1) inizializzo i gradienti a 0
-* 2) per ogni campione del dataset faccio inferenza e backpropagation, accumulando i gradienti
-* 3) processo i gradienti dividendoli per la dimensione del dataset
-* 4) aggiorno pesi e bias usando i gradienti processati
-*/
+ * 1) inizializzo i gradienti a 0
+ * 2) per ogni campione del dataset faccio inferenza e backpropagation, accumulando i gradienti
+ * 3) processo i gradienti dividendoli per la dimensione del dataset
+ * 4) aggiorno pesi e bias usando i gradienti processati
+ */
 
-void NeuralNetwork::Train(OptimizationAlgorithm metodo, ChartControl *plot_soluzione, ChartControl *plot_loss_function, std::atomic_bool& QuitRequest)
+void NeuralNetwork::Train(OptimizationAlgorithm metodo, ChartControl *plot_soluzione, ChartControl *plot_loss_function, std::atomic_bool &QuitRequest)
 {
 	plot_soluzione->values[0] = GetYOrig();
-	plot_soluzione->x_values  = GetX();
+	plot_soluzione->x_values = GetX();
 
 	std::vector<float> epoche(epochs_number);
 	for (int i = 0; i < epoche.size(); i++)
@@ -415,7 +409,7 @@ void NeuralNetwork::Train(OptimizationAlgorithm metodo, ChartControl *plot_soluz
 		{
 			// Inferenza
 			ForwardInference(j);
-			
+
 			// BackPropagation
 			BackPropagation(j);
 
@@ -424,7 +418,7 @@ void NeuralNetwork::Train(OptimizationAlgorithm metodo, ChartControl *plot_soluz
 				return;
 			}
 
-			//ResetNeuroni();
+			// ResetNeuroni();
 		}
 
 		ProcessaGradienti();
@@ -455,7 +449,7 @@ void NeuralNetwork::Train(OptimizationAlgorithm metodo, ChartControl *plot_soluz
 #endif // _DEBUG
 
 				plot_soluzione->GetParent()->CallAfter([plot_soluzione, plot_loss_function, i, this, &QuitRequest]()
-					{
+													   {
 						// la lambda potrebbe essere eseguita dopo che ho richiesto la distruzione della finestra;
 						// CallAfter non esegue subito la lambda, la mette in coda negli eventi della GUI
 						if (QuitRequest)
@@ -484,11 +478,10 @@ void NeuralNetwork::Train(OptimizationAlgorithm metodo, ChartControl *plot_soluz
 						std::cout << "lock released by the main thread: " << std::this_thread::get_id() << std::endl;
 						std::cout << "------------------------------" << std::endl;
 #endif
-						gui_update_pending = false;
-					});
+						gui_update_pending = false; });
 			}
 		}
-	}/*--------------------------CICLO FOR EPICHE--------------------------------------*/
+	} /*--------------------------CICLO FOR EPICHE--------------------------------------*/
 }
 
 void NeuralNetwork::Shuffle()
@@ -497,7 +490,6 @@ void NeuralNetwork::Shuffle()
 	for (int i = 0; i < m_indexes.size(); i++)
 		m_indexes[i] = i;
 
-	
 #ifdef _DEBUG
 	std::mt19937 rng(42);
 #else
@@ -527,7 +519,6 @@ void NeuralNetwork::Shuffle()
 	}
 	debug_file.close();
 #endif // _DEBUG
-
 }
 
 void NeuralNetwork::ForwardInference(int campione_dataset)
@@ -544,7 +535,7 @@ void NeuralNetwork::ForwardInference(int campione_dataset)
 	// ciclo sui layer fino ad arrivare al penultimo
 	for (size_t layer = 0; layer < m_connections_vector.size(); layer++)
 	{
-		// ciclo sui neuroni dello strato successivo. questo ciclo è parallelizzabile, 
+		// ciclo sui neuroni dello strato successivo. questo ciclo è parallelizzabile,
 		// ogni neurone dello strato successivo può essere calcolato indipendentemente dagli altri
 		for (size_t n = 0; n < Layers[layer + 1].m_neurons.size(); n++)
 		{
@@ -556,7 +547,7 @@ void NeuralNetwork::ForwardInference(int campione_dataset)
 
 				auto [from, to] = m_connections_vector[layer][c];
 
-				// se la connessione arriva al neurone n dello strato layer + 1, 
+				// se la connessione arriva al neurone n dello strato layer + 1,
 				// allora prendo il contributo del neurone "from" dello strato layer
 				if (to == n)
 				{
@@ -592,7 +583,7 @@ void NeuralNetwork::RiordinaDati()
 
 void NeuralNetwork::EsportaDati()
 {
-	const char* path_output = "generate_data/result.txt";
+	const char *path_output = "generate_data/result.txt";
 	std::ofstream output(path_output);
 
 	for (int i = 0; i < m_dataset_size; i++)
@@ -601,34 +592,33 @@ void NeuralNetwork::EsportaDati()
 	}
 	output.close();
 
-	const char* error_path = "generate_data/error.txt";
+	const char *error_path = "generate_data/error.txt";
 	std::ofstream output_error(error_path);
 
 	for (int i = 0; i < epochs_number; i++)
 	{
-		output_error <<  i << ", " << m_error[i] << std::endl;
+		output_error << i << ", " << m_error[i] << std::endl;
 	}
 
 	output_error.close();
-
 }
 
-const std::vector<float>& NeuralNetwork::GetYPred() const
+const std::vector<float> &NeuralNetwork::GetYPred() const
 {
 	return y_pred_original;
 }
 
-const std::vector<float>& NeuralNetwork::GetYOrig() const
+const std::vector<float> &NeuralNetwork::GetYOrig() const
 {
 	return y_target_original;
 }
 
-const std::vector<float>& NeuralNetwork::GetX() const
+const std::vector<float> &NeuralNetwork::GetX() const
 {
 	return x_original;
 }
 
-const std::vector<float>& NeuralNetwork::GetErrorVector() const
+const std::vector<float> &NeuralNetwork::GetErrorVector() const
 {
 	return m_error;
 }
@@ -640,4 +630,3 @@ NeuralNetwork::~NeuralNetwork()
 }
 
 #endif // _DEBUG
-

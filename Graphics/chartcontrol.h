@@ -7,25 +7,23 @@
 #include <wx/wx.h>
 #include <wx/statline.h>
 
-
-enum class TipodiGrafico
+enum class ChartType
 {
-    soluzione       = 0,
-    loss_function   = 1
+    training = 0,
+    loss_function = 1
 };
 
 class ChartControl : public wxWindow
 {
 public:
     ChartControl(
-        wxWindow* parent,
+        wxWindow *parent,
         wxWindowID id,
-        const wxPoint& pos,
-        const wxSize& size,
-        TipodiGrafico tipo
-    );
+        const wxPoint &pos,
+        const wxSize &size,
+        ChartType tipo);
 
-    void OnPaint(wxPaintEvent& event);
+    void OnPaint(wxPaintEvent &event);
 
     std::vector<float> x_values;
     std::vector<std::vector<float>> values;
@@ -34,11 +32,10 @@ public:
 
     int numero_epoca;
 
-    TipodiGrafico grafico;
+    ChartType grafico;
 
 private:
     std::tuple<int, double, double> calculateChartSegmentCountAndRange(
         double origLow,
-        double origHigh
-    );
+        double origHigh);
 };

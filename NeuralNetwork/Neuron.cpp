@@ -1,7 +1,6 @@
 #include "Neuron.h"
 
-Neuron::Neuron(const ActivationFunction& funzione_di_attivazione):
-	m_funzione(funzione_di_attivazione), m_input(0), m_output(0), m_bias(0)
+Neuron::Neuron(const ActivationFunction &funzione_di_attivazione) : m_funzione(funzione_di_attivazione), m_input(0), m_output(0), m_bias(0)
 {
 }
 
@@ -17,7 +16,7 @@ void Neuron::SetBias(float value)
 
 void Neuron::AddInput(float value)
 {
-	m_input+= value;
+	m_input += value;
 }
 
 void Neuron::ApplicaFdA()
