@@ -380,43 +380,43 @@ void MyFrame::SetUpReteNeurale(wxCommandEvent& event)
     switch (m_tipo_regressione)
     {
         case 0:
-            Network->ReadInputData("training_data/linear.txt");
+            Network->ReadInputData("../training_data/linear.txt");
             break;
         case 1:
-            Network->ReadInputData("training_data/quadratic.txt");
+            Network->ReadInputData("../training_data/quadratic.txt");
             break;
         case 2:
-            Network->ReadInputData("training_data/cubic.txt");
+            Network->ReadInputData("../training_data/cubic.txt");
             break;
         case 3:
-            Network->ReadInputData("training_data/abs.txt");
+            Network->ReadInputData("../training_data/abs.txt");
             break;
         case 4:
-            Network->ReadInputData("training_data/exp.txt");
+            Network->ReadInputData("../training_data/exp.txt");
             break;
         case 5:
-            Network->ReadInputData("training_data/sigmoid.txt");
+            Network->ReadInputData("../training_data/sigmoid.txt");
             break;
         case 6:
-            Network->ReadInputData("training_data/tanh.txt");
+            Network->ReadInputData("../training_data/tanh.txt");
             break;
         case 7:
-            Network->ReadInputData("training_data/inverse_quadratic.txt");
+            Network->ReadInputData("../training_data/inverse_quadratic.txt");
             break;
         case 8:
-            Network->ReadInputData("training_data/gaussian.txt");
+            Network->ReadInputData("../training_data/gaussian.txt");
             break;
         case 9:
-            Network->ReadInputData("training_data/sinx.txt");
+            Network->ReadInputData("../training_data/sinx.txt");
             break;
         case 10:
-            Network->ReadInputData("training_data/cosx.txt");
+            Network->ReadInputData("../training_data/cosx.txt");
             break;
         case 11:
-            Network->ReadInputData("training_data/sinc.txt");
+            Network->ReadInputData("../training_data/sinc.txt");
             break;
         default:
-            Network->ReadInputData("training_data/tanh.txt");
+            Network->ReadInputData("../training_data/tanh.txt");
             break;
     }
 

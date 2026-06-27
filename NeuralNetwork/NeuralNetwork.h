@@ -3,16 +3,17 @@
 #include <fstream>
 #include <random>
 #include <mutex>
+#include <atomic>
 
 #include "Layer.h"
-#include "..\Graphics\chartcontrol.h"
-#include "..\Utils\VectorOperations.h"
+#include "../Graphics/chartcontrol.h"
+#include "../Utils/VectorOperations.h"
 
 enum class OptimizationAlgorithm
 {
-	FullBatchGradientDescent	= 0,
-	StochasticGradientDescent	= 1,
-	MinibatchGradientDescent	= 2
+	FullBatchGradientDescent = 0,
+	StochasticGradientDescent = 1,
+	MinibatchGradientDescent = 2
 };
 
 class NeuralNetwork
@@ -40,7 +41,7 @@ public:
 	std::vector<int> m_bias_number;
 	float m_learning_rate;
 	std::vector<std::vector<std::pair<int, int>>> m_connections_vector;
-	//int m_numero_connessioni;
+	// int m_numero_connessioni;
 
 	int epochs_number;
 
@@ -50,27 +51,25 @@ public:
 	~NeuralNetwork();
 #endif // _DEBUG
 
-	
-
 	void InizializzaPesieBias();
 	void InizializzaGradienti();
 	void ProcessaGradienti();
 	void RiordinaDati();
 	void ResetNeuroni();
 
-	void Train(OptimizationAlgorithm, ChartControl*, ChartControl*, std::atomic_bool&);
+	void Train(OptimizationAlgorithm, ChartControl *, ChartControl *, std::atomic_bool &);
 
 	void BackPropagation(int);
 	void ForwardInference(int);
 	void AggiornaPesieBias();
 	void CreaMatriceConnessioni();
 
-	const std::vector<float>& GetYPred() const;
-	const std::vector<float>& GetYOrig() const;
-	const std::vector<float>& GetX() const;
-	const std::vector<float>& GetErrorVector() const;
+	const std::vector<float> &GetYPred() const;
+	const std::vector<float> &GetYOrig() const;
+	const std::vector<float> &GetX() const;
+	const std::vector<float> &GetErrorVector() const;
 
-	void ReadInputData(const char*);
+	void ReadInputData(const char *);
 	void EsportaDati();
 
 	float CalcolaLoss();

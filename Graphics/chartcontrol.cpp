@@ -6,21 +6,20 @@
 
 // wxFULL_REPAINT_ON_RESIZE needed for Windows
 ChartControl::ChartControl(
-    wxWindow* parent,
+    wxWindow *parent,
     wxWindowID id,
-    const wxPoint& pos,
-    const wxSize& size,
-    TipodiGrafico tipo
-)
+    const wxPoint &pos,
+    const wxSize &size,
+    ChartType tipo)
     : wxWindow(parent, id, pos, size, wxFULL_REPAINT_ON_RESIZE),
-    numero_epoca(0),
-    grafico(tipo)
+      numero_epoca(0),
+      grafico(tipo)
 {
     SetBackgroundStyle(wxBG_STYLE_PAINT);
 
     Bind(wxEVT_PAINT, &ChartControl::OnPaint, this);
 
-    if (grafico == TipodiGrafico::soluzione)
+    if (grafico == ChartType::training)
     {
         // y_pred e y_target
         values = std::vector<std::vector<float>>(2);
@@ -32,7 +31,7 @@ ChartControl::ChartControl(
     }
 }
 
-void ChartControl::OnPaint(wxPaintEvent& evt)
+void ChartControl::OnPaint(wxPaintEvent &evt)
 {
 #ifdef _DEBUG
     std::cout << "OnPaint called\n";
@@ -44,7 +43,7 @@ void ChartControl::OnPaint(wxPaintEvent& evt)
     dc.SetFont(*wxNORMAL_FONT);
     const double normalFontH = static_cast<double>(dc.GetCharHeight());
 
-    if (grafico == TipodiGrafico::soluzione)
+    if (grafico == ChartType::training)
     {
         if (values[1].size() <= 0)
             return;
@@ -55,7 +54,7 @@ void ChartControl::OnPaint(wxPaintEvent& evt)
             return;
     }
 
-    wxGraphicsContext* gc = wxGraphicsContext::Create(dc);
+    wxGraphicsContext *gc = wxGraphicsContext::Create(dc);
 
     if (gc)
     {
@@ -65,13 +64,11 @@ void ChartControl::OnPaint(wxPaintEvent& evt)
             wxNORMAL_FONT->GetPointSize() * 2.0,
             wxFONTFAMILY_DEFAULT,
             wxFONTSTYLE_NORMAL,
-            wxFONTWEIGHT_BOLD
-        );
+            wxFONTWEIGHT_BOLD);
 
         gc->SetFont(
             titleFont,
-            wxSystemSettings::GetAppearance().IsDark() ? *wxWHITE : *wxBLACK
-        );
+            wxSystemSettings::GetAppearance().IsDark() ? *wxWHITE : *wxBLACK);
 
         /*--------------------- font ---------------------*/
 
@@ -86,14 +83,12 @@ void ChartControl::OnPaint(wxPaintEvent& evt)
             0,
             0,
             static_cast<double>(GetSize().GetWidth()),
-            static_cast<double>(GetSize().GetHeight())
-        };
+            static_cast<double>(GetSize().GetHeight())};
 
         const double marginX = fullArea.GetSize().GetWidth() / 16.0;
         const double marginTop = std::max(
             fullArea.GetSize().GetHeight() / 16.0,
-            titleTopBottomMinimumMargin * 2.0 + th
-        );
+            titleTopBottomMinimumMargin * 2.0 + th);
         double labelsToChartAreaMargin = this->FromDIP(10);
         const double marginBottom = labelsToChartAreaMargin * 3.0 + normalFontH * 2.0;
 
@@ -106,8 +101,7 @@ void ChartControl::OnPaint(wxPaintEvent& evt)
         gc->DrawText(
             this->title,
             (fullArea.GetSize().GetWidth() - tw) / 2.0,
-            (marginTop - th) / 2.0
-        );
+            (marginTop - th) / 2.0);
 
         wxAffineMatrix2D normalizedToChartArea{};
 
@@ -130,10 +124,10 @@ void ChartControl::OnPaint(wxPaintEvent& evt)
         double xmin = *std::min_element(x_values.begin(), x_values.end());
         double xmax = *std::max_element(x_values.begin(), x_values.end());
 
-        const auto& [YsegmentCount, YrangeLow, YrangeHigh] =
+        const auto &[YsegmentCount, YrangeLow, YrangeHigh] =
             calculateChartSegmentCountAndRange(ymin, ymax);
 
-        const auto& [XsegmentCount, XrangeLow, XrangeHigh] =
+        const auto &[XsegmentCount, XrangeLow, XrangeHigh] =
             calculateChartSegmentCountAndRange(xmin, xmax);
 
         double yValueSpan = YrangeHigh - YrangeLow;
@@ -154,8 +148,7 @@ void ChartControl::OnPaint(wxPaintEvent& evt)
         normalizedToYValue.Scale(1, -1);
         normalizedToYValue.Scale(
             static_cast<double>(values[0].size() - 1),
-            yValueSpan
-        );
+            yValueSpan);
 
         // y' = (y + highValue) * (-yValueSpan)
         // x' = (x + 0) * (y_target.size() - 1)
@@ -168,26 +161,24 @@ void ChartControl::OnPaint(wxPaintEvent& evt)
 
         gc->SetFont(
             *wxNORMAL_FONT,
-            wxSystemSettings::GetAppearance().IsDark() ? *wxWHITE : *wxBLACK
-        );
+            wxSystemSettings::GetAppearance().IsDark() ? *wxWHITE : *wxBLACK);
 
         // Asse y.
         for (int i = 0; i < yLinesCount; i++)
         {
             double normalizedLineY = static_cast<double>(i) / (yLinesCount - 1);
 
-            auto lineStartPoint = normalizedToChartArea.TransformPoint({ 0, normalizedLineY });
-            auto lineEndPoint = normalizedToChartArea.TransformPoint({ 1, normalizedLineY });
+            auto lineStartPoint = normalizedToChartArea.TransformPoint({0, normalizedLineY});
+            auto lineEndPoint = normalizedToChartArea.TransformPoint({1, normalizedLineY});
 
             wxPoint2DDouble linePoints[] = {
                 lineStartPoint,
-                lineEndPoint
-            };
+                lineEndPoint};
 
             gc->StrokeLines(2, linePoints);
 
             double valueAtLineY =
-                normalizedToYValue.TransformPoint({ 0, normalizedLineY }).m_y;
+                normalizedToYValue.TransformPoint({0, normalizedLineY}).m_y;
 
             auto text = wxString::Format("%.2f", valueAtLineY);
 
@@ -195,8 +186,7 @@ void ChartControl::OnPaint(wxPaintEvent& evt)
                 text,
                 dc,
                 wxELLIPSIZE_MIDDLE,
-                chartArea.GetLeft() - labelsToChartAreaMargin
-            );
+                chartArea.GetLeft() - labelsToChartAreaMargin);
 
             double tw, th;
             gc->GetTextExtent(text, &tw, &th);
@@ -204,8 +194,7 @@ void ChartControl::OnPaint(wxPaintEvent& evt)
             gc->DrawText(
                 text,
                 chartArea.GetLeft() - labelsToChartAreaMargin - tw,
-                lineStartPoint.m_y - th / 2.0
-            );
+                lineStartPoint.m_y - th / 2.0);
         }
 
         // Asse x.
@@ -213,22 +202,21 @@ void ChartControl::OnPaint(wxPaintEvent& evt)
         {
             double normalizedLineX = static_cast<double>(i) / (xLinesCount - 1);
 
-            auto lineStartPoint = normalizedToChartArea.TransformPoint({ normalizedLineX, 0 });
-            auto lineEndPoint = normalizedToChartArea.TransformPoint({ normalizedLineX, 1 });
+            auto lineStartPoint = normalizedToChartArea.TransformPoint({normalizedLineX, 0});
+            auto lineEndPoint = normalizedToChartArea.TransformPoint({normalizedLineX, 1});
 
             wxPoint2DDouble linePoints[] = {
                 lineStartPoint,
-                lineEndPoint
-            };
+                lineEndPoint};
 
             gc->StrokeLines(2, linePoints);
 
             double valueAtLineX =
-                normalizedToXValue.TransformPoint({ normalizedLineX, 0 }).m_x;
+                normalizedToXValue.TransformPoint({normalizedLineX, 0}).m_x;
 
             wxString text;
 
-            if (grafico == TipodiGrafico::soluzione)
+            if (grafico == ChartType::training)
             {
                 text = wxString::Format("%.2f", valueAtLineX);
             }
@@ -241,8 +229,7 @@ void ChartControl::OnPaint(wxPaintEvent& evt)
                 text,
                 dc,
                 wxELLIPSIZE_MIDDLE,
-                chartArea.GetLeft() - labelsToChartAreaMargin
-            );
+                chartArea.GetLeft() - labelsToChartAreaMargin);
 
             double tw, th;
             gc->GetTextExtent(text, &tw, &th);
@@ -250,8 +237,7 @@ void ChartControl::OnPaint(wxPaintEvent& evt)
             gc->DrawText(
                 text,
                 lineStartPoint.m_x - tw / 2,
-                chartArea.GetBottom() + labelsToChartAreaMargin
-            );
+                chartArea.GetBottom() + labelsToChartAreaMargin);
         }
 
         /*----------------- numero epoca corrente ----------------*/
@@ -260,13 +246,11 @@ void ChartControl::OnPaint(wxPaintEvent& evt)
             wxNORMAL_FONT->GetPointSize(),
             wxFONTFAMILY_DEFAULT,
             wxFONTSTYLE_NORMAL,
-            wxFONTWEIGHT_BOLD
-        );
+            wxFONTWEIGHT_BOLD);
 
         gc->SetFont(
             legendFont,
-            wxSystemSettings::GetAppearance().IsDark() ? *wxWHITE : *wxBLACK
-        );
+            wxSystemSettings::GetAppearance().IsDark() ? *wxWHITE : *wxBLACK);
 
         auto testo_iterazione = wxString::Format("Epoch: %d", numero_epoca);
 
@@ -283,26 +267,25 @@ void ChartControl::OnPaint(wxPaintEvent& evt)
 
         gc->SetFont(
             *wxNORMAL_FONT,
-            wxSystemSettings::GetAppearance().IsDark() ? *wxWHITE : *wxBLACK
-        );
+            wxSystemSettings::GetAppearance().IsDark() ? *wxWHITE : *wxBLACK);
 
         /*------------------------ legenda -----------------------*/
 
-        if (grafico == TipodiGrafico::soluzione)
+        if (grafico == ChartType::training)
         {
-            const double lineLen      = this->FromDIP(25);
+            const double lineLen = this->FromDIP(25);
             const double symbolRadius = this->FromDIP(5);
-            const double gap          = this->FromDIP(5);
-            const double itemSpacing  = this->FromDIP(10);
+            const double gap = this->FromDIP(5);
+            const double itemSpacing = this->FromDIP(10);
 
             double twT, thT, twP, thP;
             gc->SetFont(*wxNORMAL_FONT,
-                wxSystemSettings::GetAppearance().IsDark() ? *wxWHITE : *wxBLACK);
-            gc->GetTextExtent("Target",     &twT, &thT);
+                        wxSystemSettings::GetAppearance().IsDark() ? *wxWHITE : *wxBLACK);
+            gc->GetTextExtent("Target", &twT, &thT);
             gc->GetTextExtent("Prediction", &twP, &thP);
 
             const double legendY = chartArea.GetBottom() + labelsToChartAreaMargin * 2.0 + normalFontH;
-            const double totalWidth  = lineLen + gap + twT + itemSpacing + lineLen + gap + twP;
+            const double totalWidth = lineLen + gap + twT + itemSpacing + lineLen + gap + twP;
             double x = (fullArea.GetWidth() - totalWidth) / 2.0;
 
             // Target: puntini blu
@@ -326,26 +309,23 @@ void ChartControl::OnPaint(wxPaintEvent& evt)
 
         gc->SetFont(
             *wxNORMAL_FONT,
-            wxSystemSettings::GetAppearance().IsDark() ? *wxWHITE : *wxBLACK
-        );
+            wxSystemSettings::GetAppearance().IsDark() ? *wxWHITE : *wxBLACK);
 
         wxPoint2DDouble leftHLinePoints[] = {
-            normalizedToChartArea.TransformPoint({ 0, 0 }),
-            normalizedToChartArea.TransformPoint({ 0, 1 })
-        };
+            normalizedToChartArea.TransformPoint({0, 0}),
+            normalizedToChartArea.TransformPoint({0, 1})};
 
         wxPoint2DDouble rightHLinePoints[] = {
-            normalizedToChartArea.TransformPoint({ 1, 0 }),
-            normalizedToChartArea.TransformPoint({ 1, 1 })
-        };
+            normalizedToChartArea.TransformPoint({1, 0}),
+            normalizedToChartArea.TransformPoint({1, 1})};
 
         gc->StrokeLines(2, leftHLinePoints);
         gc->StrokeLines(2, rightHLinePoints);
 
-        wxPoint2DDouble* pointArray = nullptr;
-        wxPoint2DDouble* pointArray2 = nullptr;
+        wxPoint2DDouble *pointArray = nullptr;
+        wxPoint2DDouble *pointArray2 = nullptr;
 
-        if (grafico == TipodiGrafico::soluzione)
+        if (grafico == ChartType::training)
         {
             pointArray = new wxPoint2DDouble[values[0].size()];
             pointArray2 = new wxPoint2DDouble[values[1].size()];
@@ -363,27 +343,22 @@ void ChartControl::OnPaint(wxPaintEvent& evt)
 
         for (int i = 0; i < values[0].size(); i++)
         {
-            pointArray[i] = valueToChartArea.TransformPoint({
-                static_cast<double>(i),
-                values[0][i]
-                });
+            pointArray[i] = valueToChartArea.TransformPoint({static_cast<double>(i),
+                                                             values[0][i]});
 
-            if (grafico == TipodiGrafico::soluzione)
+            if (grafico == ChartType::training)
             {
-                pointArray2[i] = valueToChartArea.TransformPoint({
-                    static_cast<double>(i),
-                    values[1][i]
-                    });
+                pointArray2[i] = valueToChartArea.TransformPoint({static_cast<double>(i),
+                                                                  values[1][i]});
             }
         }
 
         gc->SetBrush(wxBrush(
-            wxSystemSettings::GetAppearance().IsDark() ? *wxCYAN : *wxBLUE
-        ));
+            wxSystemSettings::GetAppearance().IsDark() ? *wxCYAN : *wxBLUE));
 
         gc->SetPen(*wxTRANSPARENT_PEN);
 
-        if (grafico == TipodiGrafico::soluzione)
+        if (grafico == ChartType::training)
         {
             for (size_t i = 0; i < values[0].size(); i++)
             {
@@ -393,31 +368,32 @@ void ChartControl::OnPaint(wxPaintEvent& evt)
                         pointArray[i].m_x - 5,
                         pointArray[i].m_y - 5,
                         10,
-                        10
-                    );
+                        10);
                 }
             }
 
             gc->SetPen(wxPen(
                 wxSystemSettings::GetAppearance().IsDark() ? *wxRED : *wxRED,
-                3
-            ));
+                3));
 
             gc->StrokeLines(values[1].size(), pointArray2);
         }
         else
         {
-            gc->SetPen(wxPen(
-                wxSystemSettings::GetAppearance().IsDark() ? *wxRED : *wxRED,
-                3
-            ));
+            if (numero_epoca > 0)
+            {
+                gc->SetPen(wxPen(
+                    wxSystemSettings::GetAppearance().IsDark() ? *wxRED : *wxRED,
+                    3));
 
-            gc->StrokeLines(numero_epoca, pointArray);
+
+                gc->StrokeLines(numero_epoca, pointArray);
+            }
         }
 
         delete[] pointArray;
 
-        if (grafico == TipodiGrafico::soluzione)
+        if (grafico == ChartType::training)
         {
             delete[] pointArray2;
         }
@@ -428,8 +404,7 @@ void ChartControl::OnPaint(wxPaintEvent& evt)
 
 std::tuple<int, double, double> ChartControl::calculateChartSegmentCountAndRange(
     double origLow,
-    double origHigh
-)
+    double origHigh)
 {
     constexpr double rangeMults[] = {
         0.2,
@@ -438,8 +413,7 @@ std::tuple<int, double, double> ChartControl::calculateChartSegmentCountAndRange
         1.0,
         2.0,
         2.5,
-        5.0
-    };
+        5.0};
 
     constexpr int maxSegments = 6;
 

@@ -9,8 +9,9 @@ private:
 	float m_input;
 	float m_output;
 	float m_bias;
+
 public:
-	Neuron(const ActivationFunction&);
+	Neuron(const ActivationFunction &);
 
 	void SetInput(float);
 	void AddInput(float);
